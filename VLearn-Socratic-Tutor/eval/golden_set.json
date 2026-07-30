@@ -1,0 +1,1319 @@
+{
+  "dataset_id": "vlearn_marked_text_grounding_v1",
+  "version": "1.1.0",
+  "case_count": 24,
+  "minimum_required_cases": 20,
+  "language": "vi",
+  "purpose": "Evaluate whether the slide marked-text summary feature answers only from retrieved transcript context and refuses unrelated questions instead of hallucinating.",
+  "source_data_pack": {
+    "root": "data/vlearn-pack",
+    "transcript_dir": "data/vlearn-pack/transcript",
+    "slides_dir": "data/vlearn-pack/slides"
+  },
+  "global_pass_rules": [
+    "Answer must be grounded in transcript context, not general knowledge.",
+    "If the selected text/question is not supported by retrieved transcript chunks, answer that the selected content does not mention it.",
+    "Do not invent exact numbers, prices, links, people, dates, or definitions that are not present in the transcript context.",
+    "When transcript context is relevant, include concise Vietnamese explanation and cite the paragraph ids used.",
+    "For negative cases, refusal is correct even if the model knows the answer from general knowledge."
+  ],
+  "cases": [
+    {
+      "id": "MTG-001",
+      "input": {
+        "marked_text": "Hiểu cách LLM hoạt động (Transformer, token, next-token prediction)",
+        "student_question": "LLM hoạt động như thế nào?",
+        "slide_context": {
+          "slide_title": "Foundation: Transformer, token, next-token prediction",
+          "nearby_text": "Transformer, token, embedding, self-attention, next-token prediction"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Giải thích LLM theo mạch: văn bản được tách thành token, token được embedding thành vector, self-attention cho các token nhìn lẫn nhau, feed-forward xử lý tiếp, rồi mô hình dự đoán token kế tiếp.",
+        "required_citations": [
+          "T06-126",
+          "T06-128",
+          "T06-136"
+        ],
+        "must_include": [
+          "token",
+          "embedding/vector",
+          "self-attention",
+          "dự đoán token kế tiếp"
+        ],
+        "must_not_include": [
+          "LLM có ý thức như con người",
+          "khẳng định đúng 100%"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-126",
+          "T06-128",
+          "T06-136"
+        ],
+        "required_concepts_in_answer": [
+          "token",
+          "embedding/vector",
+          "self-attention",
+          "dự đoán token kế tiếp"
+        ],
+        "forbidden_claims_in_answer": [
+          "LLM có ý thức như con người",
+          "khẳng định đúng 100%"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-002",
+      "input": {
+        "marked_text": "Transformer xử lý song song khác RNN/LSTM",
+        "student_question": "Vì sao Transformer nhanh hơn các kiến trúc cũ?",
+        "slide_context": {
+          "slide_title": "Transformer architecture",
+          "nearby_text": "parallel processing, RNN, LSTM"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Transformer cho phép nhiều token nhìn lẫn nhau song song, trong khi RNN/LSTM đi tuần tự hơn nên dễ mất thông tin ở phần đầu khi chuỗi dài.",
+        "required_citations": [
+          "T06-127",
+          "T06-158"
+        ],
+        "must_include": [
+          "xử lý song song",
+          "token nhìn lẫn nhau",
+          "khác RNN/LSTM"
+        ],
+        "must_not_include": [
+          "Transformer luôn rẻ hơn",
+          "RNN không còn dùng ở đâu"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-127",
+          "T06-158"
+        ],
+        "required_concepts_in_answer": [
+          "xử lý song song",
+          "token nhìn lẫn nhau",
+          "khác RNN/LSTM"
+        ],
+        "forbidden_claims_in_answer": [
+          "Transformer luôn rẻ hơn",
+          "RNN không còn dùng ở đâu"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-003",
+      "input": {
+        "marked_text": "Token là đơn vị cơ bản của LLM",
+        "student_question": "Token có phải lúc nào cũng là một từ không?",
+        "slide_context": {
+          "slide_title": "Token và tokenization",
+          "nearby_text": "Hello World, Xin chào Việt Nam, def function"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Không. Transcript nói token không trùng tuyệt đối với từ: một từ có thể thành nhiều token, nửa token, hoặc số token khác nhau tùy ngôn ngữ và cách tokenizer biểu diễn văn bản.",
+        "required_citations": [
+          "T06-134"
+        ],
+        "must_include": [
+          "không phải một từ là một token",
+          "tiếng Việt có thể burn nhiều token hơn",
+          "input/output token ảnh hưởng chi phí"
+        ],
+        "must_not_include": [
+          "mỗi ký tự là một token",
+          "token luôn bằng một âm tiết"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-134"
+        ],
+        "required_concepts_in_answer": [
+          "không phải một từ là một token",
+          "tiếng Việt có thể burn nhiều token hơn",
+          "input/output token ảnh hưởng chi phí"
+        ],
+        "forbidden_claims_in_answer": [
+          "mỗi ký tự là một token",
+          "token luôn bằng một âm tiết"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-004",
+      "input": {
+        "marked_text": "LLM không đọc word by word mà đọc token",
+        "student_question": "Mô hình đọc chữ giống con người không?",
+        "slide_context": {
+          "slide_title": "Token và cơ chế dự đoán",
+          "nearby_text": "không đọc ký tự, không đọc word by word"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Transcript nói LLM không đọc ký tự hay từng từ như con người; nó xử lý token được biểu diễn trong không gian toán học rồi dùng similarity/self-attention để dự đoán tiếp.",
+        "required_citations": [
+          "T06-135",
+          "T06-136"
+        ],
+        "must_include": [
+          "không đọc ký tự",
+          "không đọc word by word",
+          "token",
+          "xác suất/similarity"
+        ],
+        "must_not_include": [
+          "LLM hiểu ngôn ngữ y hệt con người"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-135",
+          "T06-136"
+        ],
+        "required_concepts_in_answer": [
+          "không đọc ký tự",
+          "không đọc word by word",
+          "token",
+          "xác suất/similarity"
+        ],
+        "forbidden_claims_in_answer": [
+          "LLM hiểu ngôn ngữ y hệt con người"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-005",
+      "input": {
+        "marked_text": "Next-token prediction và autoregressive",
+        "student_question": "Output token có ảnh hưởng lần dự đoán sau không?",
+        "slide_context": {
+          "slide_title": "Next-token prediction",
+          "nearby_text": "output token trở thành input token, feed forward"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Có. Transcript mô tả cơ chế autoregressive: token đã sinh ra được đưa ngược vào ngữ cảnh, nên output token trước trở thành một phần input cho bước dự đoán token tiếp theo.",
+        "required_citations": [
+          "T06-137"
+        ],
+        "must_include": [
+          "output token trở thành input",
+          "feed forward",
+          "dự đoán token tiếp theo"
+        ],
+        "must_not_include": [
+          "mỗi token sinh ra độc lập hoàn toàn"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-137"
+        ],
+        "required_concepts_in_answer": [
+          "output token trở thành input",
+          "feed forward",
+          "dự đoán token tiếp theo"
+        ],
+        "forbidden_claims_in_answer": [
+          "mỗi token sinh ra độc lập hoàn toàn"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-006",
+      "input": {
+        "marked_text": "Temperature điều chỉnh mức độ sáng tạo",
+        "student_question": "Khi cần chính xác cao thì nên chỉnh temperature thế nào?",
+        "slide_context": {
+          "slide_title": "Temperature",
+          "nearby_text": "finance, y tế, marketing, creativity"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Khi cần độ chính xác cao như y tế hoặc tài chính, transcript khuyên hạ mức sáng tạo/temperature xuống thấp; khi cần nội dung sáng tạo như marketing thì có thể tăng hơn.",
+        "required_citations": [
+          "T06-136",
+          "T06-140"
+        ],
+        "must_include": [
+          "temperature thấp cho độ chính xác",
+          "temperature cao hơn cho sáng tạo"
+        ],
+        "must_not_include": [
+          "temperature thấp đảm bảo luôn đúng 100%"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-136",
+          "T06-140"
+        ],
+        "required_concepts_in_answer": [
+          "temperature thấp cho độ chính xác",
+          "temperature cao hơn cho sáng tạo"
+        ],
+        "forbidden_claims_in_answer": [
+          "temperature thấp đảm bảo luôn đúng 100%"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-007",
+      "input": {
+        "marked_text": "Hallucination và bias trong LLM",
+        "student_question": "Vì sao LLM vẫn có thể trả lời sai?",
+        "slide_context": {
+          "slide_title": "Giới hạn của LLM",
+          "nearby_text": "bias, hallucination, fine-tuning, reinforcement learning"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Transcript nêu LLM không đúng 100%; dữ liệu internet có bias, quá trình fine-tuning/RLHF cũng có thể mang bias từ chuyên gia, nên hallucination vẫn có thể xảy ra.",
+        "required_citations": [
+          "T06-138",
+          "T06-139"
+        ],
+        "must_include": [
+          "có thể trả lời sai",
+          "bias",
+          "fine-tuning/reinforcement learning",
+          "hallucination"
+        ],
+        "must_not_include": [
+          "hallucination chỉ do mạng internet yếu"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-138",
+          "T06-139"
+        ],
+        "required_concepts_in_answer": [
+          "có thể trả lời sai",
+          "bias",
+          "fine-tuning/reinforcement learning",
+          "hallucination"
+        ],
+        "forbidden_claims_in_answer": [
+          "hallucination chỉ do mạng internet yếu"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-008",
+      "input": {
+        "marked_text": "RAG giúp giảm hallucination bằng citation",
+        "student_question": "Transcript nói RAG giúp gì?",
+        "slide_context": {
+          "slide_title": "RAG and citation",
+          "nearby_text": "retrieval augmented, citation, tài liệu nội bộ"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "RAG được mô tả như cách đưa thêm nguồn tham chiếu vào để LLM reasoning trên vùng nội dung liên quan và trả về câu trả lời có citation thay vì tự bịa.",
+        "required_citations": [
+          "T03-036",
+          "T06-139"
+        ],
+        "must_include": [
+          "retrieval/tăng cường truy xuất",
+          "dữ liệu được cung cấp/source cụ thể",
+          "citation",
+          "giảm hallucination"
+        ],
+        "must_not_include": [
+          "RAG là fine-tune model"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T03-036",
+          "T06-139"
+        ],
+        "required_concepts_in_answer": [
+          "retrieval/tăng cường truy xuất",
+          "dữ liệu được cung cấp/source cụ thể",
+          "citation",
+          "giảm hallucination"
+        ],
+        "forbidden_claims_in_answer": [
+          "RAG là fine-tune model"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-009",
+      "input": {
+        "marked_text": "Knowledge cutoff, hallucination, context window",
+        "student_question": "Ba bất lợi của LLM trong transcript là gì?",
+        "slide_context": {
+          "slide_title": "Giới hạn của LLM",
+          "nearby_text": "knowledge cutoff, hallucination, context window"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Ba bất lợi được nêu là knowledge cutoff, hallucination và context window: mô hình có mốc tri thức, có thể bịa/sai, và chỉ nhìn được lượng ngữ cảnh hữu hạn.",
+        "required_citations": [
+          "T06-148",
+          "T06-149"
+        ],
+        "must_include": [
+          "knowledge cutoff",
+          "hallucination",
+          "context window"
+        ],
+        "must_not_include": [
+          "privacy",
+          "latency",
+          "copyright"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-148",
+          "T06-149"
+        ],
+        "required_concepts_in_answer": [
+          "knowledge cutoff",
+          "hallucination",
+          "context window"
+        ],
+        "forbidden_claims_in_answer": [
+          "privacy",
+          "latency",
+          "copyright"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-010",
+      "input": {
+        "marked_text": "Context window giới hạn lượng thông tin mô hình nhìn thấy",
+        "student_question": "Vì sao query dài hoặc video dài có thể làm kết quả không đúng?",
+        "slide_context": {
+          "slide_title": "Context window",
+          "nearby_text": "giới hạn token, ebook, video dài"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Transcript nói context window là giới hạn lượng token mô hình nhìn được. Query quá dài, nhiều ebook hoặc video dài có thể vượt giới hạn input/ngữ cảnh, khiến hệ thống trả lời không ổn định.",
+        "required_citations": [
+          "T06-149",
+          "T06-150",
+          "T06-157"
+        ],
+        "must_include": [
+          "giới hạn token/ngữ cảnh",
+          "query dài",
+          "vượt context"
+        ],
+        "must_not_include": [
+          "do máy người dùng thiếu RAM"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-149",
+          "T06-150",
+          "T06-157"
+        ],
+        "required_concepts_in_answer": [
+          "giới hạn token/ngữ cảnh",
+          "query dài",
+          "vượt context"
+        ],
+        "forbidden_claims_in_answer": [
+          "do máy người dùng thiếu RAM"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-011",
+      "input": {
+        "marked_text": "Token economy và chi phí API",
+        "student_question": "Chi phí API được tính theo gì?",
+        "slide_context": {
+          "slide_title": "Token economy",
+          "nearby_text": "input token, output token, total cost"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Theo transcript, chi phí API gắn với token economy và thường tính cả input token lẫn output token để ra total cost.",
+        "required_citations": [
+          "T06-154",
+          "T06-155"
+        ],
+        "must_include": [
+          "input token",
+          "output token",
+          "tổng số token/chi phí",
+          "token economy"
+        ],
+        "must_not_include": [
+          "tính theo số slide",
+          "tính theo số file PDF"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-154",
+          "T06-155"
+        ],
+        "required_concepts_in_answer": [
+          "input token",
+          "output token",
+          "tổng số token/chi phí",
+          "token economy"
+        ],
+        "forbidden_claims_in_answer": [
+          "tính theo số slide",
+          "tính theo số file PDF"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-012",
+      "input": {
+        "marked_text": "Chọn mô hình theo mục tiêu: flash nhỏ nhẹ hoặc model lớn",
+        "student_question": "Khi nào nên dùng model nhỏ, khi nào nên dùng model lớn?",
+        "slide_context": {
+          "slide_title": "Model choice",
+          "nearby_text": "trả lời ngắn, prompt basic, phân tích nhiều bước"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Transcript gợi ý chọn model theo mục tiêu: việc ngắn/basic có thể dùng mô hình flash nhỏ để tiết kiệm compute; tác vụ cần phân tích nhiều bước hoặc reasoning phức tạp thì hướng tới model lớn hơn.",
+        "required_citations": [
+          "T06-156"
+        ],
+        "must_include": [
+          "tùy mục tiêu",
+          "flash nhỏ nhẹ",
+          "tiết kiệm compute",
+          "model lớn cho phân tích phức tạp"
+        ],
+        "must_not_include": [
+          "luôn dùng model lớn nhất"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-156"
+        ],
+        "required_concepts_in_answer": [
+          "tùy mục tiêu",
+          "flash nhỏ nhẹ",
+          "tiết kiệm compute",
+          "model lớn cho phân tích phức tạp"
+        ],
+        "forbidden_claims_in_answer": [
+          "luôn dùng model lớn nhất"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-013",
+      "input": {
+        "marked_text": "Self-attention với Q, K, V",
+        "student_question": "Q, K, V trong ví dụ transcript được giải thích thế nào?",
+        "slide_context": {
+          "slide_title": "Self-attention",
+          "nearby_text": "query, key, value, thư viện, sách"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Transcript giải thích thân thiện: Q là truy vấn, K là nhãn/key như tiêu đề sách trong thư viện, V là nội dung/value bên trong; mô hình mapping query với key/value để tìm liên hệ.",
+        "required_citations": [
+          "T06-130",
+          "T06-131",
+          "T06-132"
+        ],
+        "must_include": [
+          "Q là query",
+          "K là key/nhãn",
+          "V là value/nội dung",
+          "tương đồng/similarity"
+        ],
+        "must_not_include": [
+          "QKV là ba loại database"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-130",
+          "T06-131",
+          "T06-132"
+        ],
+        "required_concepts_in_answer": [
+          "Q là query",
+          "K là key/nhãn",
+          "V là value/nội dung",
+          "tương đồng/similarity"
+        ],
+        "forbidden_claims_in_answer": [
+          "QKV là ba loại database"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-014",
+      "input": {
+        "marked_text": "Ví dụ 'nó' trong câu con mèo ngồi trên bàn",
+        "student_question": "Self-attention giúp hiểu đại từ như thế nào?",
+        "slide_context": {
+          "slide_title": "Attention example",
+          "nearby_text": "con mèo, cái bàn, nó rất đáng yêu"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Trong ví dụ, self-attention cho token tự nhìn các token khác và tính similarity, nên từ 'nó' được gắn với 'con mèo' thay vì 'cái bàn'.",
+        "required_citations": [
+          "T06-129",
+          "T06-130"
+        ],
+        "must_include": [
+          "đại từ 'nó'",
+          "con mèo",
+          "similarity score",
+          "self-attention"
+        ],
+        "must_not_include": [
+          "mô hình dùng luật ngữ pháp hard-code"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-129",
+          "T06-130"
+        ],
+        "required_concepts_in_answer": [
+          "đại từ 'nó'",
+          "con mèo",
+          "similarity score",
+          "self-attention"
+        ],
+        "forbidden_claims_in_answer": [
+          "mô hình dùng luật ngữ pháp hard-code"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-015",
+      "input": {
+        "marked_text": "Pretraining, supervised fine-tuning, alignment/an toàn",
+        "student_question": "LLM được tạo ra qua các giai đoạn nào?",
+        "slide_context": {
+          "slide_title": "Training LLM",
+          "nearby_text": "pretraining, supervised fine-tuning, phù hợp và an toàn"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Transcript mô tả các bước: pretraining trên nhiều dữ liệu để học tri thức, supervised fine-tuning để trả lời đúng kiểu, rồi căn chỉnh/alignment để phù hợp với người dùng và an toàn hơn.",
+        "required_citations": [
+          "T06-141",
+          "T06-143",
+          "T06-145"
+        ],
+        "must_include": [
+          "pretraining",
+          "supervised fine-tuning",
+          "alignment/phù hợp",
+          "an toàn"
+        ],
+        "must_not_include": [
+          "chỉ cần prompt engineering là tạo được LLM"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-141",
+          "T06-143",
+          "T06-145"
+        ],
+        "required_concepts_in_answer": [
+          "pretraining",
+          "supervised fine-tuning",
+          "alignment/phù hợp",
+          "an toàn"
+        ],
+        "forbidden_claims_in_answer": [
+          "chỉ cần prompt engineering là tạo được LLM"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-016",
+      "input": {
+        "marked_text": "AI hiện đại: machine learning, deep learning, Transformer",
+        "student_question": "Transcript tổng kết cấu trúc AI hiện đại thế nào?",
+        "slide_context": {
+          "slide_title": "Wrap up foundation",
+          "nearby_text": "AI, machine learning, deep learning, Transformer"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Phần tổng kết nói AI hiện đại có machine learning/deep learning ở lõi, và Transformer là kiến trúc quan trọng trong trái tim của LLM hiện đại vì cho token nhìn lẫn nhau song song.",
+        "required_citations": [
+          "T06-158"
+        ],
+        "must_include": [
+          "machine learning",
+          "deep learning",
+          "Transformer",
+          "song song"
+        ],
+        "must_not_include": [
+          "AI hiện đại chỉ là rule-based"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-158"
+        ],
+        "required_concepts_in_answer": [
+          "machine learning",
+          "deep learning",
+          "Transformer",
+          "song song"
+        ],
+        "forbidden_claims_in_answer": [
+          "AI hiện đại chỉ là rule-based"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-017",
+      "input": {
+        "marked_text": "Live demo self-attention bằng PhoBERT",
+        "student_question": "Bài lab giúp học viên kiểm chứng điều gì?",
+        "slide_context": {
+          "slide_title": "Lab demo self-attention",
+          "nearby_text": "Colab, bertviz, transformers, PhoBERT, head view"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Bài lab dùng Colab/BertViz/transformers với PhoBERT để trực quan hóa attention, giúp học viên thấy token này nhìn token kia ra sao và hiểu cơ chế self-attention của Transformer.",
+        "required_citations": [
+          "T06-160",
+          "T06-161"
+        ],
+        "must_include": [
+          "PhoBERT",
+          "trực quan hóa attention",
+          "token nhìn token khác",
+          "self-attention"
+        ],
+        "must_not_include": [
+          "bài lab dùng GPT-4 để fine-tune"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-160",
+          "T06-161"
+        ],
+        "required_concepts_in_answer": [
+          "PhoBERT",
+          "trực quan hóa attention",
+          "token nhìn token khác",
+          "self-attention"
+        ],
+        "forbidden_claims_in_answer": [
+          "bài lab dùng GPT-4 để fine-tune"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-018",
+      "input": {
+        "marked_text": "Kiểm thử sản phẩm AI bằng test case",
+        "student_question": "Vì sao cần test cả luồng tool call?",
+        "slide_context": {
+          "slide_title": "Testing AI system",
+          "nearby_text": "tool call, đếm chữ R trong strawberry, parameter"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Transcript nói dùng tool deterministic có thể chắc hơn LLM cho tác vụ cụ thể, nhưng vẫn cần test vì LLM có thể chọn sai tool hoặc lấy sai parameter ở bước gọi tool.",
+        "required_citations": [
+          "T03-079"
+        ],
+        "must_include": [
+          "tool deterministic",
+          "chọn đúng tool",
+          "parameter",
+          "test hệ thống"
+        ],
+        "must_not_include": [
+          "không cần test nếu đã có function Python"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T03-079"
+        ],
+        "required_concepts_in_answer": [
+          "tool deterministic",
+          "chọn đúng tool",
+          "parameter",
+          "test hệ thống"
+        ],
+        "forbidden_claims_in_answer": [
+          "không cần test nếu đã có function Python"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-019",
+      "input": {
+        "marked_text": "RAG cho chatbot nội bộ công ty",
+        "student_question": "Tại sao chatbot nội bộ cần retrieval từ tài liệu công ty?",
+        "slide_context": {
+          "slide_title": "RAG use case",
+          "nearby_text": "quy tắc nội bộ, luật lao động công ty, tài liệu nội bộ"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Vì dữ liệu nội bộ công ty không nằm sẵn trong training data của LLM. Transcript nói cần bóc tài liệu nội bộ vào hệ retrieval/RAG để câu trả lời reference đúng nguồn.",
+        "required_citations": [
+          "T03-036"
+        ],
+        "must_include": [
+          "dữ liệu nội bộ không có trong training data",
+          "RAG/retrieval",
+          "reference tài liệu"
+        ],
+        "must_not_include": [
+          "chỉ cần đổi prompt là đủ"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T03-036"
+        ],
+        "required_concepts_in_answer": [
+          "dữ liệu nội bộ không có trong training data",
+          "RAG/retrieval",
+          "reference tài liệu"
+        ],
+        "forbidden_claims_in_answer": [
+          "chỉ cần đổi prompt là đủ"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-020",
+      "input": {
+        "marked_text": "Ước tính worst-case API cost",
+        "student_question": "Khi làm sản phẩm AI cần tính worst case chi phí như thế nào?",
+        "slide_context": {
+          "slide_title": "API cost planning",
+          "nearby_text": "subscription, API call, worst case, 1 tháng"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Transcript khuyên dựng worst case: người dùng dùng tối đa, số API call mỗi phút/tháng, chi phí để cover subscription hoặc vận hành, rồi đưa con số đó vào kế hoạch sản phẩm.",
+        "required_citations": [
+          "T03-084",
+          "T03-086"
+        ],
+        "must_include": [
+          "worst case",
+          "API call",
+          "chi phí vận hành",
+          "tính theo mức dùng tối đa"
+        ],
+        "must_not_include": [
+          "chi phí luôn cố định cho mọi người dùng"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T03-084",
+          "T03-086"
+        ],
+        "required_concepts_in_answer": [
+          "worst case",
+          "API call",
+          "chi phí vận hành",
+          "tính theo mức dùng tối đa"
+        ],
+        "forbidden_claims_in_answer": [
+          "chi phí luôn cố định cho mọi người dùng"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    },
+    {
+      "id": "MTG-021",
+      "input": {
+        "marked_text": "Token economy và chi phí API",
+        "student_question": "Đoạn này có nói về học tăng cường là gì không?",
+        "slide_context": {
+          "slide_title": "Token economy",
+          "nearby_text": "input token, output token, total cost"
+        }
+      },
+      "must_answer": {
+        "behavior": "out_of_scope_refusal",
+        "summary": "Phải trả lời rằng đoạn được chọn nói về token economy/chi phí input-output token, không giải thích khái niệm học tăng cường. Nếu có nhắc reinforcement learning từ nguồn khác thì phải nói đó không thuộc đoạn chọn này.",
+        "required_citations": [
+          "T06-154",
+          "T06-155"
+        ],
+        "must_include": [
+          "đoạn bạn chọn không đề cập/không giải thích học tăng cường",
+          "không tự suy diễn"
+        ],
+        "must_not_include": [
+          "định nghĩa đầy đủ reinforcement learning từ kiến thức ngoài"
+        ]
+      },
+      "guardrails": {
+        "behavior": "out_of_scope_refusal",
+        "required_citations_in_context": [
+          "T06-154",
+          "T06-155"
+        ],
+        "required_concepts_in_answer": [
+          "đoạn bạn chọn không đề cập/không giải thích học tăng cường",
+          "không tự suy diễn"
+        ],
+        "forbidden_claims_in_answer": [
+          "định nghĩa đầy đủ reinforcement learning từ kiến thức ngoài"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": true,
+        "refusal_markers": [
+          "không đề cập",
+          "không đủ căn cứ",
+          "không có trong transcript",
+          "đoạn bạn chọn",
+          "không tự suy diễn"
+        ]
+      }
+    },
+    {
+      "id": "MTG-022",
+      "input": {
+        "marked_text": "Transformer xử lý song song khác RNN/LSTM",
+        "student_question": "Lịch học ngày mai và deadline nộp bài là khi nào?",
+        "slide_context": {
+          "slide_title": "Transformer architecture",
+          "nearby_text": "parallel processing, RNN, LSTM"
+        }
+      },
+      "must_answer": {
+        "behavior": "out_of_scope_refusal",
+        "summary": "Phải nói đoạn được chọn không đề cập lịch học hoặc deadline. Không được bịa lịch trình; có thể gợi ý xem thông báo/kênh chính thức nếu cần.",
+        "required_citations": [
+          "T06-127",
+          "T06-158"
+        ],
+        "must_include": [
+          "đoạn bạn chọn không đề cập lịch/deadline",
+          "không có đủ thông tin trong transcript context"
+        ],
+        "must_not_include": [
+          "ngày mai học sáng/chiều cụ thể",
+          "deadline cụ thể"
+        ]
+      },
+      "guardrails": {
+        "behavior": "out_of_scope_refusal",
+        "required_citations_in_context": [
+          "T06-127",
+          "T06-158"
+        ],
+        "required_concepts_in_answer": [
+          "đoạn bạn chọn không đề cập lịch/deadline",
+          "không có đủ thông tin trong transcript context"
+        ],
+        "forbidden_claims_in_answer": [
+          "ngày mai học sáng/chiều cụ thể",
+          "deadline cụ thể"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": true,
+        "refusal_markers": [
+          "không đề cập",
+          "không đủ căn cứ",
+          "không có trong transcript",
+          "đoạn bạn chọn",
+          "không tự suy diễn"
+        ]
+      }
+    },
+    {
+      "id": "MTG-023",
+      "input": {
+        "marked_text": "Context window giới hạn lượng thông tin mô hình nhìn thấy",
+        "student_question": "GPT-5 hiện có context window chính xác bao nhiêu token?",
+        "slide_context": {
+          "slide_title": "Context window",
+          "nearby_text": "512K, 1 triệu, 2 triệu, video dài"
+        }
+      },
+      "must_answer": {
+        "behavior": "out_of_scope_refusal",
+        "summary": "Phải nói transcript chỉ đưa ví dụ về giới hạn context window và một số hướng tiếp cận, không cung cấp con số chính xác cho GPT-5. Không được tự bịa số token.",
+        "required_citations": [
+          "T06-149",
+          "T06-150"
+        ],
+        "must_include": [
+          "không có con số chính xác cho GPT-5 trong đoạn này",
+          "không tự bịa"
+        ],
+        "must_not_include": [
+          "GPT-5 có chính xác X token"
+        ]
+      },
+      "guardrails": {
+        "behavior": "out_of_scope_refusal",
+        "required_citations_in_context": [
+          "T06-149",
+          "T06-150"
+        ],
+        "required_concepts_in_answer": [
+          "không có con số chính xác cho GPT-5 trong đoạn này",
+          "không tự bịa"
+        ],
+        "forbidden_claims_in_answer": [
+          "GPT-5 có chính xác X token"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": true,
+        "refusal_markers": [
+          "không đề cập",
+          "không đủ căn cứ",
+          "không có trong transcript",
+          "đoạn bạn chọn",
+          "không tự suy diễn"
+        ]
+      }
+    },
+    {
+      "id": "MTG-024",
+      "input": {
+        "marked_text": "Temperature điều chỉnh mức độ sáng tạo",
+        "student_question": "Temperature có phải là nhiệt độ GPU/server không?",
+        "slide_context": {
+          "slide_title": "Temperature",
+          "nearby_text": "random token, sáng tạo, chính xác"
+        }
+      },
+      "must_answer": {
+        "behavior": "grounded_answer",
+        "summary": "Không. Trong transcript, temperature là tham số điều chỉnh mức độ sáng tạo/ngẫu nhiên khi chọn token, không phải nhiệt độ phần cứng của GPU hoặc server.",
+        "required_citations": [
+          "T06-136",
+          "T06-140"
+        ],
+        "must_include": [
+          "tham số điều chỉnh sáng tạo/ngẫu nhiên",
+          "không phải nhiệt độ GPU/server"
+        ],
+        "must_not_include": [
+          "cần đo bằng cảm biến phần cứng"
+        ]
+      },
+      "guardrails": {
+        "behavior": "grounded_answer",
+        "required_citations_in_context": [
+          "T06-136",
+          "T06-140"
+        ],
+        "required_concepts_in_answer": [
+          "tham số điều chỉnh sáng tạo/ngẫu nhiên",
+          "không phải nhiệt độ GPU/server"
+        ],
+        "forbidden_claims_in_answer": [
+          "cần đo bằng cảm biến phần cứng"
+        ],
+        "must_include_answer_sections": [
+          "Ý chính",
+          "Giải thích",
+          "Tự kiểm tra"
+        ],
+        "must_include_any_citation_in_answer": true,
+        "answer_citations_must_be_subset_of_context": true,
+        "must_use_deepseek": true,
+        "must_refuse_out_of_scope": false
+      }
+    }
+  ],
+  "guardrails_version": "1.0.0",
+  "global_guardrails": {
+    "retrieval_method_must_equal": "rank_bm25",
+    "summary_provider_must_equal": "deepseek",
+    "summary_status_must_equal": "generated",
+    "answer_must_include_citation": true,
+    "answer_citations_must_come_from_retrieved_chunks": true,
+    "required_answer_sections": [
+      "Ý chính",
+      "Giải thích",
+      "Tự kiểm tra"
+    ],
+    "grounding_rules": [
+      "Use only retrieved transcript chunks.",
+      "Do not add outside facts, exact numbers, prices, links, dates, or claims not supported by retrieved transcript.",
+      "If the student question asks about something unsupported by the selected transcript, explicitly say the selected transcript does not mention it.",
+      "Every explanation must cite transcript paragraph ids like [T06-126]."
+    ],
+    "out_of_scope_refusal_markers": [
+      "không đề cập",
+      "không đủ căn cứ",
+      "không có trong transcript",
+      "đoạn bạn chọn",
+      "transcript không nói"
+    ]
+  }
+}

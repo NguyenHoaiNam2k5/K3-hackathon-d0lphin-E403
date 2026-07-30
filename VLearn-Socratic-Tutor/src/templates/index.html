@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VLearn AI — Slide-to-Transcript Socratic Tutor</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        },
+                        accent: {
+                            cyan: '#06b6d4',
+                            emerald: '#10b981',
+                            rose: '#f43f5e',
+                            amber: '#f59e0b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Glassmorphism Styles */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+        }
+        .glow-indigo {
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+        }
+        
+        /* Pulse Animation for Spatial Hotspots */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 0.3; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .pulse-pin {
+            animation: pulse-ring 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.6);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="glass-card sticky top-0 z-50 px-4 md:px-6 py-3 border-b border-slate-800 flex items-center justify-between gap-3 flex-wrap">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
+                <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+            </div>
+            <div class="min-w-0">
+                <h1 class="font-heading font-bold text-lg text-white flex items-center gap-2 flex-wrap">
+                    VLearn AI <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Slide-to-Transcript Grounded Tutor</span>
+                </h1>
+                <p class="text-xs text-slate-400">Batch 03 Mini Hackathon AI — Hackathon Prototype Demo</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 flex-wrap justify-end">
+            <!-- Mode Selector Tabs -->
+            <div class="bg-slate-900/80 p-1 rounded-xl border border-slate-800 flex gap-1">
+                <button id="btn-tab-student" onclick="switchTab('student')" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-indigo-600 text-white shadow">
+                    <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i> Học Viên View
+                </button>
+                <button id="btn-tab-instructor" onclick="switchTab('instructor')" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
+                    <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i> Giảng Viên Heatmap
+                </button>
+            </div>
+
+            <!-- API Status & Key Settings -->
+            <button onclick="toggleApiModal()" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 flex items-center gap-2 transition">
+                <span id="api-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="api-status-text">Demo Mode (Active)</span>
+                <i data-lucide="settings" class="w-3.5 h-3.5 text-slate-400"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="flex-1 p-4 lg:p-6 flex flex-col gap-6 max-w-[1700px] w-full mx-auto">
+
+        <!-- STUDENT VIEW TAB -->
+        <div id="tab-student-view" class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+            
+            <!-- LEFT COLUMN: Interactive Slide Canvas (7 Cols) -->
+            <div class="lg:col-span-7 flex flex-col gap-4">
+                
+                <!-- Slide Header & Control Bar -->
+                <div class="glass-panel p-3 rounded-2xl flex items-center justify-between text-xs text-slate-400">
+                    <div class="flex items-center gap-2 font-medium text-slate-200">
+                        <i data-lucide="presentation" class="w-4 h-4 text-indigo-400"></i>
+                        <span>Slide 04 / 24: Vector Retriever & Reranking Architecture</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="inline-flex items-center gap-1 bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/20">
+                            <i data-lucide="mouse-pointer-click" class="w-3 h-3"></i> Trỏ/Click vào Slide để mở Tutor
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Slide Viewer Container (Relative Hotspot Container) -->
+                <div class="relative glass-card rounded-2xl overflow-hidden border border-slate-800 p-6 min-h-[520px] flex flex-col justify-between group">
+                    
+                    <!-- Simulated Slide Background / Diagrams -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950/40 opacity-90"></div>
+                    <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+
+                    <!-- Slide Content Header -->
+                    <div class="relative z-10 flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-mono font-bold tracking-widest text-indigo-400 uppercase">AI Thực Chiến — Buổi 02</span>
+                            <h2 class="text-xl font-heading font-extrabold text-white mt-1">Sơ Đồ Hệ Thống RAG & Reranking Pipeline</h2>
+                        </div>
+                        <span class="text-xs font-mono bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700">Timestamp: 14:20 - 18:45</span>
+                    </div>
+
+                    <div class="relative z-10 glass-panel rounded-xl border border-indigo-500/30 p-4 mt-5 select-text">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <span class="text-[11px] font-mono uppercase tracking-widest text-cyan-300">Marked learning objective</span>
+                                <p id="marked-objective" onmouseup="handleSlideTextSelection()" data-marked-text="Hiểu cách LLM hoạt động (Transformer, token, next-token prediction)" class="mt-2 text-base md:text-lg font-heading font-bold text-white leading-snug cursor-text">
+                                    1. Hiểu cách LLM hoạt động (Transformer, token, next-token prediction)
+                                </p>
+                            </div>
+                            <button onclick="markObjectiveText()" class="shrink-0 inline-flex items-center gap-2 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-500/20 focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                                <i data-lucide="highlighter" class="w-3.5 h-3.5"></i>
+                                Tóm tắt
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Diagram Hotspots Grid -->
+                    <div class="relative z-10 grid grid-cols-3 gap-4 my-8">
+                        
+                        <!-- Hotspot 1: Vector Database -->
+                        <div onclick="selectHotspot('hs1')" id="hs1-card" class="glass-panel p-4 rounded-xl border border-indigo-500/30 hover:border-indigo-400 transition-all cursor-pointer group/spot relative">
+                            <div class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold shadow-lg">1</div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <i data-lucide="database" class="w-5 h-5 text-indigo-400"></i>
+                                <h4 class="font-bold text-sm text-white">Vector Database</h4>
+                            </div>
+                            <p class="text-xs text-slate-400">Dense Embedding Retrieval & Similarity Search (HNSW Index)</p>
+                            
+                            <!-- Spatial Pulse Pin Anchor -->
+                            <div class="absolute inset-0 border-2 border-indigo-400/50 rounded-xl opacity-0 group-hover/spot:opacity-100 transition-all pointer-events-none">
+                                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-indigo-500/40 pulse-pin"></div>
+                            </div>
+                        </div>
+
+                        <!-- Hotspot 2: Reranker Engine -->
+                        <div onclick="selectHotspot('hs2')" id="hs2-card" class="glass-panel p-4 rounded-xl border border-cyan-500/30 hover:border-cyan-400 transition-all cursor-pointer group/spot relative">
+                            <div class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-cyan-500 flex items-center justify-center text-white text-xs font-bold shadow-lg">2</div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <i data-lucide="layers" class="w-5 h-5 text-cyan-400"></i>
+                                <h4 class="font-bold text-sm text-white">Reranker Engine</h4>
+                            </div>
+                            <p class="text-xs text-slate-400">Cross-Encoder Scoring & Context Window Compression</p>
+                            
+                            <!-- Spatial Pulse Pin Anchor -->
+                            <div class="absolute inset-0 border-2 border-cyan-400/50 rounded-xl opacity-0 group-hover/spot:opacity-100 transition-all pointer-events-none">
+                                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-cyan-500/40 pulse-pin"></div>
+                            </div>
+                        </div>
+
+                        <!-- Hotspot 3: LLM Generator -->
+                        <div onclick="selectHotspot('hs3')" id="hs3-card" class="glass-panel p-4 rounded-xl border border-emerald-500/30 hover:border-emerald-400 transition-all cursor-pointer group/spot relative">
+                            <div class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs font-bold shadow-lg">3</div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <i data-lucide="cpu" class="w-5 h-5 text-emerald-400"></i>
+                                <h4 class="font-bold text-sm text-white">LLM Generator</h4>
+                            </div>
+                            <p class="text-xs text-slate-400">Grounded Synthesis & Exact Citation Output</p>
+                            
+                            <!-- Spatial Pulse Pin Anchor -->
+                            <div class="absolute inset-0 border-2 border-emerald-400/50 rounded-xl opacity-0 group-hover/spot:opacity-100 transition-all pointer-events-none">
+                                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-emerald-500/40 pulse-pin"></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Spatial Floating Glassmorphism Popover Card (Appears on Hotspot Click) -->
+                    <div id="spatial-popover" class="relative z-20 glass-card p-4 rounded-xl border border-indigo-500/40 bg-slate-900/90 shadow-2xl transition-all duration-300">
+                        <div class="flex items-start justify-between gap-3 mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-indigo-400 animate-ping"></span>
+                                <span class="text-xs font-bold text-indigo-300 uppercase tracking-wide">Spatial Anchor Pin Active</span>
+                            </div>
+                            <span class="text-[11px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">Chunk #L145-L160</span>
+                        </div>
+                        <p id="popover-text" class="text-xs text-slate-200 leading-relaxed font-medium">
+                            Hãy click vào 1 điểm sơ đồ trên Slide để AI Tutor đọc transcript đoạn giảng tương ứng và đặt câu hỏi gợi mở!
+                        </p>
+                    </div>
+
+                    <!-- Slide Footer -->
+                    <div class="relative z-10 flex justify-between items-center text-[11px] text-slate-500 border-t border-slate-800/80 pt-3 mt-4">
+                        <span>Khoá học AI Thực Chiến — Batch 03 (Khoá 3)</span>
+                        <span id="data-pack-footer">Dữ liệu Transcript: <code>vlearn-pack/transcript</code></span>
+                    </div>
+                </div>
+
+                <!-- Synchronized Lecture Transcript Viewer -->
+                <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col gap-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                            <i data-lucide="file-text" class="w-4 h-4 text-indigo-400"></i> Transcript Bài Giảng (Bản sạch trích đoạn)
+                        </h3>
+                        <span id="data-pack-status" class="text-[11px] text-slate-400">Đang đọc data pack...</span>
+                    </div>
+
+                    <div id="transcript-container" class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-900 font-mono text-xs text-slate-300 max-h-[160px] overflow-y-auto space-y-2 leading-relaxed">
+                        <p id="t-line-1" class="p-1.5 rounded transition">
+                            <span class="text-slate-600 mr-2">L145</span><strong class="text-indigo-400">Giảng viên:</strong> Ở bước Vector Search, chúng ta chỉ tìm kiếm dựa trên độ tương đồng Cosine giữa Query và Document Embeddings.
+                        </p>
+                        <p id="t-line-2" class="p-1.5 rounded transition">
+                            <span class="text-slate-600 mr-2">L150</span><strong class="text-indigo-400">Giảng viên:</strong> Tuy nhiên, Vector Search đơn thuần rất hay bỏ sót các từ khóa ngữ nghĩa chính xác (Exact Keywords). Đó là lý do tại sao phải đưa qua bước Reranker ở L155.
+                        </p>
+                        <p id="t-line-3" class="p-1.5 rounded transition">
+                            <span class="text-slate-600 mr-2">L155</span><strong class="text-indigo-400">Giảng viên:</strong> Cross-Encoder Reranker sẽ xếp hạng lại Top-K kết quả dựa trên cả ngữ cảnh sâu trước khi truyền cho LLM Generator ở L160.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Socratic AI Tutor & Concept Mindmap (5 Cols) -->
+            <div class="lg:col-span-5 flex flex-col gap-4">
+                
+                <!-- Socratic Chat Window Header -->
+                <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
+                            <i data-lucide="bot" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-heading font-bold text-sm text-white">Socratic AI Tutor</h3>
+                            <span class="text-[11px] text-emerald-400 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Grounded on transcript pack
+                            </span>
+                        </div>
+                    </div>
+                    <!-- 3-Turn Tracker Badge -->
+                    <div class="text-right">
+                        <span id="turn-badge" class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono">
+                            Lượt 1 / 3 (Socratic)
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Chat Message List Container -->
+                <div id="chat-messages" class="glass-panel p-4 rounded-2xl border border-slate-800 flex-1 min-h-[380px] max-h-[420px] overflow-y-auto flex flex-col gap-3">
+                    
+                    <!-- Welcome AI Message -->
+                    <div class="flex gap-3 items-start">
+                        <div class="w-7 h-7 rounded-lg bg-indigo-600/30 flex items-center justify-center text-indigo-300 text-xs shrink-0 mt-0.5">AI</div>
+                        <div class="glass-card p-3 rounded-2xl rounded-tl-none border-slate-800 text-xs leading-relaxed text-slate-200 max-w-[85%]">
+                            Xin chào! Mình là Socratic AI Tutor. Hãy <strong>trỏ chuột hoặc click vào bất kỳ sơ đồ nào trên Slide 04</strong> bên trái, mình sẽ đọc transcript bài giảng của thầy và đặt câu hỏi gợi mở cho bạn!
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Escape Hatch & Control Bar (HAX Principle G9) -->
+                <div id="escape-hatch-bar" class="hidden glass-card p-2.5 rounded-xl border border-amber-500/30 bg-amber-500/5 flex items-center justify-between">
+                    <span class="text-xs text-amber-300 flex items-center gap-1.5">
+                        <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Bạn thấy khó quá? (Lượt thứ 3)
+                    </span>
+                    <button onclick="triggerDirectAnswer()" class="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs transition shadow">
+                        Giải thích thẳng cho tôi
+                    </button>
+                </div>
+
+                <!-- Dynamic Concept Tree Mindmap (Visual WOW) -->
+                <div class="glass-card p-4 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                            <i data-lucide="git-fork" class="w-4 h-4 text-cyan-400"></i> Dynamic Concept Map
+                        </h4>
+                        <span class="text-[10px] text-slate-500 font-mono">Live Visual Graph</span>
+                    </div>
+
+                    <!-- Nodes Grid -->
+                    <div id="concept-nodes" class="flex flex-wrap gap-2">
+                        <span class="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-mono flex items-center gap-1">
+                            <i data-lucide="circle-dot" class="w-3 h-3 text-indigo-400"></i> RAG Pipeline
+                        </span>
+                        <span id="node-vector" class="px-2.5 py-1 rounded-lg bg-slate-900 text-slate-500 border border-slate-800 text-xs font-mono opacity-50 transition-all">
+                            Vector DB (Cosine)
+                        </span>
+                        <span id="node-reranker" class="px-2.5 py-1 rounded-lg bg-slate-900 text-slate-500 border border-slate-800 text-xs font-mono opacity-50 transition-all">
+                            Reranker (Cross-Encoder)
+                        </span>
+                        <span id="node-llm" class="px-2.5 py-1 rounded-lg bg-slate-900 text-slate-500 border border-slate-800 text-xs font-mono opacity-50 transition-all">
+                            LLM Grounding
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- INSTRUCTOR HEATMAP TAB (Initially Hidden) -->
+        <div id="tab-instructor-view" class="hidden flex-1 flex flex-col gap-6">
+            
+            <div class="glass-card p-6 rounded-2xl border border-slate-800">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h2 class="text-xl font-heading font-extrabold text-white flex items-center gap-2">
+                            <i data-lucide="activity" class="w-6 h-6 text-rose-400"></i> Instructor Misconception Heatmap
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Bản đồ điểm nghẽn kiến thức của cả lớp theo thời gian thực từ Signal Chatlog VLearn</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-mono font-bold">
+                        Dữ liệu 200 Học viên
+                    </span>
+                </div>
+
+                <!-- Heatmap Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    <!-- Topic 1 -->
+                    <div class="glass-panel p-4 rounded-xl border border-rose-500/40 bg-rose-500/5">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-rose-400 uppercase">Mức Độ Tắc: RẤT CAO</span>
+                            <span class="text-sm font-mono font-extrabold text-white">48% Học viên</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-white mb-1">Reranker vs Vector Search</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                            Học viên hay nhầm lẫn giữa Cosine Distance và Cross-Encoder Score tại Slide 04 #L150.
+                        </p>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div class="bg-rose-500 h-full w-[48%]"></div>
+                        </div>
+                    </div>
+
+                    <!-- Topic 2 -->
+                    <div class="glass-panel p-4 rounded-xl border border-amber-500/40 bg-amber-500/5">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-amber-400 uppercase">Mức Độ Tắc: TRUNG BÌNH</span>
+                            <span class="text-sm font-mono font-extrabold text-white">28% Học viên</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-white mb-1">Embedding Chunk Size</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                            Thắc mắc về việc cắt đoạn 512 tokens hay 1024 tokens khi nạp vào Vector DB.
+                        </p>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div class="bg-amber-500 h-full w-[28%]"></div>
+                        </div>
+                    </div>
+
+                    <!-- Topic 3 -->
+                    <div class="glass-panel p-4 rounded-xl border border-emerald-500/40 bg-emerald-500/5">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-emerald-400 uppercase">Mức Độ Tắc: THẤP</span>
+                            <span class="text-sm font-mono font-extrabold text-white">12% Học viên</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-white mb-1">LLM Temperature Setting</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                            Cấu hình Temp = 0.1 cho bài toán Grounded Citation.
+                        </p>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full w-[12%]"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- API Settings Modal (Hidden by Default) -->
+    <div id="api-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-card max-w-md w-full p-6 rounded-2xl border border-slate-800 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-heading font-bold text-base text-white flex items-center gap-2">
+                    <i data-lucide="key" class="w-5 h-5 text-indigo-400"></i> Cấu Hình AI API Key
+                </h3>
+                <button onclick="toggleApiModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed mb-4">
+                Nhập API Key để chạy trực tiếp với LLM thật (Gemini / OpenRouter), hoặc giữ trống để dùng <strong>Demo Mode (Mock Thông Minh 100% không lo lỗi trên sân khấu Live Demo)</strong>.
+            </p>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-medium text-slate-300 block mb-1">Google Gemini API Key / OpenAI Key</label>
+                    <input type="password" id="api-key-input" placeholder="AIzaSy... hoặc sk-..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button onclick="toggleApiModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300">Đóng</button>
+                <button onclick="saveApiKey()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-lg shadow-indigo-600/30">Lưu Cấu Hình</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Javascript Logic -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+        loadDataPackSummary();
+
+        // State Tracking
+        let currentTab = 'student';
+        let currentHotspot = null;
+        let currentMarkedContext = null;
+        let turnCount = 1;
+        let apiKey = localStorage.getItem('vlearn_api_key') || '';
+
+        // Hotspots Data mapped to Transcript Lines
+        const hotspots = {
+            hs1: {
+                title: "Vector Database (Cosine Distance)",
+                lines: ["t-line-1"],
+                chunk: "04_Buoi2.md#L145",
+                socraticQuestion: "Theo bạn, nếu câu hỏi của học viên chứa một TỪ KHÓA CHÍNH XÁC (Exact Keyword) chưa từng xuất hiện trong tập Vector Embedding, liệu Vector Search đơn thuần ở bước này có tìm ra được không?",
+                directAnswer: "Vector Search dựa trên ngữ nghĩa (Semantic Embedding) nên đối với các từ khóa hiếm hoặc viết tắt chính xác (Exact Keyword), nó có thể bị xếp hạng thấp. Do đó cần phải qua bước Reranker ở L150.",
+                nodeId: "node-vector"
+            },
+            hs2: {
+                title: "Reranker Engine (Cross-Encoder)",
+                lines: ["t-line-2"],
+                chunk: "04_Buoi2.md#L150-L155",
+                socraticQuestion: "Tại sao thầy giáo lại nhấn mạnh rằng Reranker (Cross-Encoder) đánh giá chính xác hơn Vector Search, nhưng chúng ta KHÔNG dùng Reranker ngay từ đầu cho toàn bộ 1 triệu văn bản?",
+                directAnswer: "Cross-Encoder Reranker tính toán tương tác giữa Query và Document rất chính xác nhưng tốc độ chậm hơn hàng nghìn lần so với Vector Search. Do đó phải dùng Vector Search lọc ra Top-50 trước rồi mới cho Reranker xếp hạng lại.",
+                nodeId: "node-reranker"
+            },
+            hs3: {
+                title: "LLM Generator (Grounded Synthesis)",
+                lines: ["t-line-3"],
+                chunk: "04_Buoi2.md#L160",
+                socraticQuestion: "Tại phút 18:10 thầy giáo khuyên đặt Temperature = 0.1 khi truyền ngữ cảnh Reranker cho LLM. Điều này giúp giải quyết rủi ro gì lớn nhất?",
+                directAnswer: "Đặt Temperature = 0.1 giúp LLM không tự bốc phét (Hallucination), ép mô hình chỉ tổng hợp câu trả lời dựa trên chính xác đoạn ngữ cảnh được Reranker cung cấp.",
+                nodeId: "node-llm"
+            }
+        };
+
+        // Switch Tabs
+        function switchTab(tab) {
+            currentTab = tab;
+            const studentView = document.getElementById('tab-student-view');
+            const instructorView = document.getElementById('tab-instructor-view');
+            const btnStudent = document.getElementById('btn-tab-student');
+            const btnInstructor = document.getElementById('btn-tab-instructor');
+
+            if (tab === 'student') {
+                studentView.classList.remove('hidden');
+                instructorView.classList.add('hidden');
+                btnStudent.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-indigo-600 text-white shadow";
+                btnInstructor.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition-all";
+            } else {
+                studentView.classList.add('hidden');
+                instructorView.classList.remove('hidden');
+                btnInstructor.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all bg-indigo-600 text-white shadow";
+                btnStudent.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition-all";
+            }
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function getSelectedSlideText() {
+            const selection = window.getSelection();
+            const selectedText = selection ? selection.toString().trim() : '';
+            return selectedText.length > 8 ? selectedText : '';
+        }
+
+        function markObjectiveText() {
+            const objectiveEl = document.getElementById('marked-objective');
+            summarizeMarkedText(objectiveEl.dataset.markedText || objectiveEl.innerText);
+        }
+
+        function handleSlideTextSelection() {
+            const selectedText = getSelectedSlideText();
+            if (selectedText) {
+                summarizeMarkedText(selectedText);
+            }
+        }
+
+        async function summarizeMarkedText(markedText) {
+            const selectedText = markedText.trim();
+            if (!selectedText) return;
+
+            appendAIMessage('Đang tìm đoạn transcript phù hợp và tóm tắt phần bạn mark...', 'retrieving');
+
+            try {
+                const response = await fetch('/api/marked-text', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        marked_text: selectedText,
+                        slide_id: 'day1-slide-02',
+                        slide_title: 'Mục tiêu bài học',
+                        nearby_text: [
+                            'AI năm 2025-2026',
+                            'Trái tim của AI hiện đại',
+                            'Token economy',
+                            'Gọi API lần đầu'
+                        ],
+                        slide_text: document.getElementById('marked-objective').innerText,
+                        use_ai_summary: true
+                    })
+                });
+                const payload = await response.json();
+                if (!response.ok) {
+                    appendAIMessage(payload.error || 'Không thể đọc marked text.', 'server-error');
+                    return;
+                }
+                currentMarkedContext = payload;
+                renderTranscriptContext(payload);
+                appendSummaryMessage(payload);
+            } catch (error) {
+                appendAIMessage('Không gọi được server transcript. Kiểm tra Flask app đang chạy trên port 8501.', 'network-error');
+            }
+        }
+
+        function renderTranscriptContext(payload) {
+            const transcriptContainer = document.getElementById('transcript-container');
+            const chunks = payload.chunks || [];
+            transcriptContainer.innerHTML = chunks.map(chunk => `
+                <p class="p-1.5 rounded transition bg-indigo-600/20 border-l-2 border-indigo-400">
+                    <span class="text-cyan-400 mr-2">${escapeHtml(chunk.paragraph_id)}</span><strong class="text-indigo-400">Giảng viên:</strong> ${escapeHtml(chunk.text)}
+                </p>
+            `).join('');
+        }
+
+        function appendSummaryMessage(payload) {
+            const chunks = payload.chunks || [];
+            const summary = payload.summary || {};
+            const citations = chunks.slice(0, 3).map(chunk => chunk.paragraph_id).join(', ');
+            const summaryText = summary.short || payload.assistant_text || 'Mình chưa tìm thấy summary phù hợp.';
+            appendAIMessage(summaryText, citations || 'no-citation');
+
+            document.getElementById('popover-text').innerHTML = `
+                <strong class="text-indigo-300 block mb-1">${escapeHtml(payload.marked_text || 'Marked text')}</strong>
+                ${escapeHtml(summaryText)}
+            `;
+        }
+
+        async function loadDataPackSummary() {
+            try {
+                const response = await fetch('/api/data-pack');
+                const payload = await response.json();
+                if (!response.ok) return;
+
+                document.getElementById('data-pack-status').innerText =
+                    `${payload.transcripts.paragraph_count} đoạn transcript · ${payload.slides.file_count} slide deck · ${payload.chatlog.row_count} chatlog rows`;
+                document.getElementById('data-pack-footer').innerHTML =
+                    `Dữ liệu: <code>${escapeHtml(payload.transcripts.file_count)} transcript files</code>`;
+            } catch (error) {
+                document.getElementById('data-pack-status').innerText = 'Chưa đọc được data pack';
+            }
+        }
+
+        // Handle Hotspot Click / Spatial Hover Selection
+        function selectHotspot(hsId) {
+            currentHotspot = hotspots[hsId];
+            turnCount = 1;
+            updateTurnBadge();
+
+            // Reset Card Borders & Highlights
+            ['hs1', 'hs2', 'hs3'].forEach(id => {
+                const el = document.getElementById(`${id}-card`);
+                el.classList.remove('ring-2', 'ring-indigo-400', 'glow-indigo');
+            });
+            const activeEl = document.getElementById(`${hsId}-card`);
+            activeEl.classList.add('ring-2', 'ring-indigo-400', 'glow-indigo');
+
+            // Highlight Transcript Line
+            ['t-line-1', 't-line-2', 't-line-3'].forEach(id => {
+                document.getElementById(id).classList.remove('bg-indigo-600/30', 'border-l-2', 'border-indigo-400');
+            });
+            currentHotspot.lines.forEach(id => {
+                document.getElementById(id).classList.add('bg-indigo-600/30', 'border-l-2', 'border-indigo-400');
+            });
+
+            // Update Spatial Popover Text
+            document.getElementById('popover-text').innerHTML = `
+                <strong class="text-indigo-300 block mb-1">${escapeHtml(currentHotspot.title)}</strong>
+                ${escapeHtml(currentHotspot.socraticQuestion)}
+            `;
+
+            // Active Concept Node
+            const nodeEl = document.getElementById(currentHotspot.nodeId);
+            nodeEl.classList.remove('opacity-50', 'bg-slate-900', 'text-slate-500');
+            nodeEl.classList.add('bg-cyan-500/20', 'text-cyan-300', 'border-cyan-500/40', 'glow-cyan');
+
+            // Add Message to Chat Panel
+            appendAIMessage(currentHotspot.socraticQuestion, currentHotspot.chunk);
+
+            // Hide escape hatch initially
+            document.getElementById('escape-hatch-bar').classList.add('hidden');
+        }
+
+        // Append AI Message to Chat
+        function appendAIMessage(text, chunk) {
+            const chatContainer = document.getElementById('chat-messages');
+            const safeText = escapeHtml(text);
+            const safeChunk = escapeHtml(chunk);
+            const msgHtml = `
+                <div class="flex gap-3 items-start animate-fade-in">
+                    <div class="w-7 h-7 rounded-lg bg-indigo-600/30 flex items-center justify-center text-indigo-300 text-xs shrink-0 mt-0.5">AI</div>
+                    <div class="glass-card p-3 rounded-2xl rounded-tl-none border-indigo-500/30 text-xs leading-relaxed text-slate-200 max-w-[90%] shadow-lg">
+                        <p class="mb-2 font-medium">${safeText}</p>
+                        <div class="flex items-center justify-between border-t border-slate-800 pt-2 mt-2 text-[10px] text-slate-400 font-mono">
+                            <span class="text-indigo-400 flex items-center gap-1"><i data-lucide="bookmark" class="w-3 h-3"></i> ${safeChunk}</span>
+                            <span>Target: Socratic Lead</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatContainer.insertAdjacentHTML('beforeend', msgHtml);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            lucide.createIcons();
+        }
+
+        // Trigger Direct Answer (Escape Hatch Button - HAX G9)
+        function triggerDirectAnswer() {
+            if (!currentHotspot) return;
+            const chatContainer = document.getElementById('chat-messages');
+            const msgHtml = `
+                <div class="flex gap-3 items-start animate-fade-in">
+                    <div class="w-7 h-7 rounded-lg bg-amber-500/30 flex items-center justify-center text-amber-300 text-xs shrink-0 mt-0.5">AI</div>
+                    <div class="glass-card p-3 rounded-2xl rounded-tl-none border-amber-500/40 text-xs leading-relaxed text-slate-200 max-w-[90%] shadow-lg bg-amber-500/5">
+                        <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px] uppercase mb-2 inline-block">Direct Answer (Augment Mode)</span>
+                        <p class="mb-2 font-medium text-slate-100">${currentHotspot.directAnswer}</p>
+                        <div class="flex items-center justify-between border-t border-amber-500/20 pt-2 mt-2 text-[10px] text-slate-400 font-mono">
+                            <span class="text-amber-400">Trích dẫn: ${currentHotspot.chunk}</span>
+                            <span>Direct Grounded</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatContainer.insertAdjacentHTML('beforeend', msgHtml);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            lucide.createIcons();
+
+            document.getElementById('escape-hatch-bar').classList.add('hidden');
+            turnCount = 3;
+            updateTurnBadge();
+        }
+
+        // Update Turn Counter
+        function updateTurnBadge() {
+            const badge = document.getElementById('turn-badge');
+            badge.innerText = `Lượt ${turnCount} / 3 (Socratic)`;
+            if (turnCount >= 3) {
+                document.getElementById('escape-hatch-bar').classList.remove('hidden');
+            }
+        }
+
+        // Modal Handlers
+        function toggleApiModal() {
+            const modal = document.getElementById('api-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function saveApiKey() {
+            const val = document.getElementById('api-key-input').value;
+            if (val) {
+                apiKey = val;
+                localStorage.setItem('vlearn_api_key', val);
+                document.getElementById('api-status-text').innerText = "Real AI API (Active)";
+                document.getElementById('api-status-dot').className = "w-2 h-2 rounded-full bg-indigo-400 animate-pulse";
+            }
+            toggleApiModal();
+        }
+    </script>
+</body>
+</html>

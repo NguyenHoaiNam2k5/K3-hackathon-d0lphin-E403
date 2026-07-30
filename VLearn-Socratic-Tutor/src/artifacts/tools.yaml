@@ -1,0 +1,38 @@
+tools:
+  - name: get_transcript_chunk
+    description: Trích xuất đoạn lời giảng trong transcript tương ứng với hotspot hoặc đoạn chữ học viên đã mark trên slide.
+    parameters:
+      type: object
+      properties:
+        hotspot_id:
+          type: string
+          description: Mã vị trí trên Slide (hs1, hs2, hs3). Không bắt buộc nếu có marked_text.
+        marked_text:
+          type: string
+          description: Đoạn chữ học viên bôi đen hoặc chọn trên slide, ví dụ "Hiểu cách LLM hoạt động (Transformer, token, next-token prediction)".
+        slide_id:
+          type: string
+          default: slide_04
+          description: Mã Slide bài giảng
+        slide_title:
+          type: string
+          description: Tiêu đề hoặc heading của slide để giới hạn ngữ cảnh tìm kiếm.
+        nearby_text:
+          type: array
+          items:
+            type: string
+          description: Các bullet/heading gần đoạn được mark; dùng để disambiguate, không dùng làm nguồn trả lời.
+        slide_text:
+          type: string
+          description: OCR text toàn slide, chỉ dùng làm fallback khi marked_text quá ngắn hoặc mơ hồ.
+
+  - name: get_misconception_heatmap
+    description: Lấy thống kê tỷ lệ học viên bị tắc kiến thức trên từng phần của Slide dành cho Dashboard Giảng viên.
+    parameters:
+      type: object
+      properties:
+        slide_id:
+          type: string
+          default: slide_04
+          description: Mã Slide bài giảng
+      required: [slide_id]
