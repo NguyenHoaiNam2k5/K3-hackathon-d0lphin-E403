@@ -1,3 +1,13 @@
+/**
+ * VLEARN LESSON REVIEW ENGINE
+ * Tích hợp PDF.js Rendering & RAG Chat System
+ */
+
+// --- CẤU HÌNH PDF.JS ---
+const pdfjsLib = window['pdfjs-dist/build/pdf'];
+// Đường dẫn worker (bắt buộc để PDF.js hoạt động mượt mà)
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
 const slides = [
   { title:'Từ vấn đề đến sản phẩm AI', short:'Vấn đề trước, công nghệ sau', time:'03:20', refs:['T01-001','T01-004'], kicker:'AI PRODUCT · FOUNDATION', heading:'Đừng bắt đầu bằng AI.\nHãy bắt đầu bằng vấn đề.', desc:'Công nghệ chỉ tạo ra giá trị khi nó giải quyết một vấn đề cụ thể cho một người dùng cụ thể.', type:'hero', prompts:['Tại sao không nên bắt đầu bằng AI?','Làm sao biến yêu cầu mơ hồ thành bài toán?'] },
   { title:'Ba câu hỏi trước khi build', short:'User · Pain · Impact', time:'04:10', refs:['T01-004','T01-005'], kicker:'PROBLEM DISCOVERY', heading:'Ba câu hỏi trước khi chọn giải pháp', desc:'Một lát cắt tốt cần rõ người dùng, điểm đau và kết quả mong muốn.', type:'cards', prompts:['Ba câu hỏi này dùng như thế nào?','Cho mình một ví dụ thực tế'] },
@@ -33,94 +43,447 @@ const quizBank = [
   {slide:5,q:'Workflow AI có đặc điểm nào?',o:['Không có bước xác định','Chia thành các bước và có gate kiểm tra','Luôn tự quyết định mọi task','Không dùng LLM'],a:1,e:'Workflow chia bài toán thành các bước lớn, có LLM và các gate kiểm tra.',ref:'T02-037'}
 ];
 
-let currentSlide=0, viewed=new Set([0]), chatAll=false;
-let quiz={scope:'slide',count:3,items:[],index:0,selected:null,checked:false,score:0};
-const $=s=>document.querySelector(s);
-const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML};
+// --- TRẠNG THÁI ỨNG DỤNG ---
+let currentSlide = 0;
+let viewed = new Set([0]);
+let chatAll = false;
+let pdfDoc = null;
+let quiz = { scope: 'slide', count: 3, items: [], index: 0, selected: null, checked: false, score: 0 };
 
-function slideInner(s){
-  const heading=esc(s.heading).replace('\n','<br>');
-  let extra='';
-  if(s.type==='cards') extra=`<div class="slide-cards"><div class="slide-card"><span>01</span><strong>Người dùng</strong><small>Ai thực sự gặp vấn đề?</small></div><div class="slide-card"><span>02</span><strong>Điểm đau</strong><small>Họ đang bị tắc ở đâu?</small></div><div class="slide-card"><span>03</span><strong>Tác động</strong><small>Mỗi lần vướng tốn điều gì?</small></div></div>`;
-  if(s.type==='compare') extra=`<div class="slide-compare"><div class="compare-box"><b>Automation</b><p>AI thực hiện công việc thay con người · phù hợp tác vụ rõ ràng.</p></div><div class="compare-box"><b>Augmentation</b><p>AI hỗ trợ · con người vẫn giữ quyền phán đoán và quyết định.</p></div></div>`;
-  if(s.type==='flow') extra=`<div class="slide-flow"><div class="flow-node"><b>Bắt đầu nhỏ</b><small>Con người giám sát</small></div><span class="flow-arrow">→</span><div class="flow-node"><b>Đo lường</b><small>Quan sát sai sót</small></div><span class="flow-arrow">→</span><div class="flow-node"><b>Tăng dần</b><small>Tự động hoá</small></div></div>`;
-  if(s.type==='hero') extra=`<div class="slide-cards"><div class="slide-card"><span>?</span><strong>Problem</strong><small>Vấn đề nào đáng giải quyết?</small></div><div class="slide-card"><span>◎</span><strong>User</strong><small>Ai thực sự cần kết quả?</small></div><div class="slide-card"><span>↗</span><strong>Outcome</strong><small>Thay đổi nào cần tạo ra?</small></div></div>`;
-  return `<div class="slide-layout"><span class="slide-kicker">${s.kicker}</span><h1>${heading}</h1><p>${s.desc}</p>${extra}<span class="slide-brand"><i></i> VLEARN · AI PRODUCT</span></div>`;
+const $ = s => document.querySelector(s);
+const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
+
+/**
+ * KHỞI TẠO FILE PDF
+ */
+async function initPDF() {
+  const url = 'sliders.pdf'; // File PDF cùng thư mục
+  try {
+    const loadingTask = pdfjsLib.getDocument(url);
+    pdfDoc = await loadingTask.promise;
+    console.log(`PDF Loaded: ${pdfDoc.numPages} pages.`);
+    renderSlide();
+  } catch (err) {
+    console.error("Error loading PDF: ", err);
+    $('#slideCanvas').innerHTML = `<p style="padding:20px; color:red;">Không tìm thấy file sliders.pdf trong thư mục. Vui lòng kiểm tra lại.</p>`;
+  }
 }
 
-function renderNav(){
-  $('#slideList').innerHTML=slides.map((s,i)=>`<button class="slide-thumb ${i===currentSlide?'active':''}" data-slide="${i}"><span class="thumb-number">${String(i+1).padStart(2,'0')}</span><span class="thumb-preview">${esc(s.short)}</span><span class="thumb-copy"><strong>${esc(s.title)}</strong><small>${s.time}</small></span></button>`).join('');
-  document.querySelectorAll('.slide-thumb').forEach(b=>b.onclick=()=>goSlide(Number(b.dataset.slide)));
+/**
+ * RENDER TRANG PDF LÊN CANVAS
+ */
+async function renderSlide() {
+  if (!pdfDoc) return;
+
+  const pageNumber = currentSlide + 1; // PDF.js dùng index từ 1
+  const page = await pdfDoc.getPage(pageNumber);
+  
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  
+  // Điều chỉnh tỷ lệ hiển thị (scale 1.5 - 2.0 cho nét)
+  const viewport = page.getViewport({ scale: 1.5 });
+  canvas.height = viewport.height;
+  canvas.width = viewport.width;
+
+  // Render vào vùng chứa
+  const slideCanvas = $('#slideCanvas');
+  // Clear previous content and append canvas
+  slideCanvas.innerHTML = ''; 
+  // ensure slide container is positioned for absolute overlays
+  slideCanvas.style.position = 'relative';
+  slideCanvas.appendChild(canvas);
+
+  // Make canvas responsive (CSS) while keeping pixel buffer for rendering
+  canvas.style.width = '100%';
+  canvas.style.height = 'auto';
+
+  const renderContext = {
+    canvasContext: context,
+    viewport: viewport
+  };
+
+  await page.render(renderContext).promise;
+
+  // --- Render selectable text layer so users can highlight text ---
+  try {
+    const textContent = await page.getTextContent();
+
+    // remove any existing textLayer
+    const existing = slideCanvas.querySelector('.textLayer');
+    if (existing) existing.remove();
+
+    const textLayerDiv = document.createElement('div');
+    textLayerDiv.className = 'textLayer';
+    // size in PDF pixels (matching canvas.width/height)
+    textLayerDiv.style.position = 'absolute';
+    textLayerDiv.style.left = '0';
+    textLayerDiv.style.top = '0';
+    textLayerDiv.style.width = canvas.width + 'px';
+    textLayerDiv.style.height = canvas.height + 'px';
+    textLayerDiv.style.transformOrigin = '0 0';
+
+    slideCanvas.appendChild(textLayerDiv);
+
+    // scale text layer to match displayed canvas size
+    const scale = canvas.clientWidth / canvas.width || 1;
+    textLayerDiv.style.transform = `scale(${scale})`;
+
+    // Use PDF.js helper to render text layer (enhanced selection)
+    pdfjsLib.renderTextLayer({
+      textContent: textContent,
+      container: textLayerDiv,
+      viewport: viewport,
+      enhanceTextSelection: true
+    });
+  } catch (e) {
+    console.warn('Text layer render failed:', e);
+  }
+
+  // Cập nhật UI thông tin slide
+  updateUI();
 }
 
-function renderSlide(){
-  const s=slides[currentSlide];
-  $('#slideCanvas').innerHTML=slideInner(s);$('#slidePosition').textContent=`Slide ${currentSlide+1} / ${slides.length}`;$('#slideSection').textContent=s.title;
-  $('#contextSlide').textContent=chatAll?'Tất cả slides':`Slide ${currentSlide+1}`;$('#transcriptRef').textContent=`Nguồn: ${s.refs.join(' · ')}`;
-  $('#prevSlide').disabled=currentSlide===0;$('#nextSlide').disabled=currentSlide===slides.length-1;
-  $('#lessonProgress').style.width=`${(viewed.size/slides.length)*100}%`;$('#progressText').textContent=`${viewed.size}/${slides.length} slide đã xem`;
-  $('#currentSlideScope').textContent=`Slide ${currentSlide+1} · ${s.title}`;
-  $('#slideDots').innerHTML=slides.map((_,i)=>`<button class="${i===currentSlide?'active':''}" data-dot="${i}" aria-label="Slide ${i+1}"></button>`).join('');
-  document.querySelectorAll('[data-dot]').forEach(b=>b.onclick=()=>goSlide(Number(b.dataset.dot)));
-  renderNav();renderSuggestions();
+/**
+ * CẬP NHẬT GIAO DIỆN PHỤ TRỢ (Metadata, Progress, Nav)
+ */
+function updateUI() {
+  const s = slides[currentSlide];
+  if (!s) return;
+
+  // Cập nhật thanh tiêu đề và vị trí
+  $('#slidePosition').textContent = `Slide ${currentSlide + 1} / ${pdfDoc.numPages}`;
+  $('#slideSection').textContent = s.title;
+  
+  // Chat context & Transcript refs
+  $('#contextSlide').textContent = chatAll ? 'Tất cả slides' : `Slide ${currentSlide + 1}`;
+  $('#transcriptRef').textContent = `Nguồn: ${s.refs.join(' · ')}`;
+  
+  // Trạng thái nút bấm
+  $('#prevSlide').disabled = currentSlide === 0;
+  $('#nextSlide').disabled = currentSlide === pdfDoc.numPages - 1;
+  
+  // Thanh tiến trình
+  const progressPercent = (viewed.size / pdfDoc.numPages) * 100;
+  $('#lessonProgress').style.width = `${progressPercent}%`;
+  $('#progressText').textContent = `${viewed.size}/${pdfDoc.numPages} slide đã xem`;
+  
+  $('#currentSlideScope').textContent = `Slide ${currentSlide + 1} · ${s.title}`;
+  
+  // Các chấm tròn (Dots)
+  $('#slideDots').innerHTML = slides.map((_, i) => 
+    `<button class="${i === currentSlide ? 'active' : ''}" onclick="goSlide(${i})" aria-label="Slide ${i + 1}"></button>`
+  ).join('');
+
+  renderNav();
+  renderSuggestions();
 }
-function goSlide(i){currentSlide=Math.max(0,Math.min(slides.length-1,i));viewed.add(currentSlide);renderSlide();if(innerWidth<=750){$('#slideNav').classList.remove('open');$('#backdrop').classList.remove('open')}}
-function renderSuggestions(){const p=slides[currentSlide].prompts;$('#suggestedQuestions').innerHTML=`<span>Gợi ý theo slide ${currentSlide+1}</span>${p.map(x=>`<button>${x}</button>`).join('')}`;document.querySelectorAll('#suggestedQuestions button').forEach(b=>b.onclick=()=>ask(b.textContent))}
 
-function findAnswer(q){const l=q.toLowerCase();let text,refs;
-  if(l.includes('automation')||l.includes('augmentation')||l.includes('giám sát')){text='<p><strong>Automation</strong> là AI làm thay, còn <strong>Augmentation</strong> là AI hỗ trợ trong khi con người vẫn quyết định.</p><p>Giảng viên khuyến nghị bắt đầu với Augmentation, theo dõi chất lượng rồi mới tăng dần mức tự động hoá—đặc biệt khi hậu quả của lỗi cao.</p>';refs=['T02-032','T02-033'];}
-  else if(l.includes('north star')||l.includes('lượt truy cập')||l.includes('đo lường')){text='<p>North Star Metric là chỉ số phản ánh <strong>giá trị cuối cùng</strong> sản phẩm tạo ra. Với sản phẩm học tập, đó nên là kết quả học tập tốt hơn.</p><p>Lượt truy cập hay thời gian sử dụng chỉ là chỉ số trung gian và chưa tự chứng minh người học tiến bộ.</p>';refs=['T02-024','T02-025'];}
-  else if(l.includes('rule')||l.includes('workflow')||l.includes('agent')){text='<p>Nếu bài toán có quy tắc rõ, hãy ưu tiên <strong>rule-based</strong>. Khi cần nhiều bước có LLM và gate kiểm tra, dùng workflow. Agent chỉ nên đến sau khi cách đơn giản chạm trần.</p>';refs=['T02-036','T02-037'];}
-  else if(l.includes('mơ hồ')||l.includes('bắt đầu')||l.includes('ba câu')||l.includes('ví dụ')){text='<p>Đừng bắt đầu từ câu “dùng AI nào”, mà hãy làm rõ <strong>ai đang gặp vấn đề, họ tắc ở bước nào và hậu quả là gì</strong>.</p><p>Ví dụ: thay vì “làm chatbot AI”, hãy xác định “học viên đang xem lại slide cần tìm nhanh lời giải thích có nguồn để tiếp tục học”.</p>';refs=['T01-001','T01-004','T01-005'];}
-  else {const s=slides[currentSlide];text=`<p>Mình tìm thấy nội dung gần nhất trong transcript của <strong>Slide ${currentSlide+1}</strong>: ${esc(s.desc)}</p><p>Bạn có thể hỏi cụ thể hơn để mình truy xuất đúng đoạn nguồn.</p>`;refs=s.refs;}
-  return{text,refs};
+/**
+ * ĐIỀU HƯỚNG SLIDE
+ */
+function goSlide(i) {
+  currentSlide = Math.max(0, Math.min(pdfDoc.numPages - 1, i));
+  viewed.add(currentSlide);
+  renderSlide();
+  
+  // Đóng sidebar nếu trên mobile
+  if (window.innerWidth <= 750) {
+    $('#slideNav').classList.remove('open');
+    $('#backdrop').classList.remove('open');
+  }
 }
-function ask(raw){const q=raw.trim();if(!q)return;const suggestions=$('#suggestedQuestions');suggestions.hidden=true;$('#chatMessages').insertAdjacentHTML('beforeend',`<div class="user-message"><div>${esc(q)}</div></div><div class="ai-message" id="typing"><span class="mini-ai">✦</span><div class="typing"><i></i><i></i><i></i></div></div>`);$('#chatInput').value='';$('#sendChat').disabled=true;$('#chatMessages').scrollTop=$('#chatMessages').scrollHeight;setTimeout(()=>{document.querySelector('#typing')?.remove();const a=findAnswer(q);const cites=a.refs.map(r=>`<button data-ref="${r}">${r} ↗</button>`).join('');$('#chatMessages').insertAdjacentHTML('beforeend',`<div class="rag-answer"><div class="answer-label"><i></i>ĐÃ TÌM TRONG TRANSCRIPT</div><div class="ai-message"><span class="mini-ai">✦</span><div class="message-content">${a.text}<div class="citation-row">${cites}</div></div></div><div class="answer-tools"><span>${a.refs.length} đoạn nguồn · vừa xong</span><button aria-label="Hữu ích"><svg viewBox="0 0 24 24"><path d="M7 10v10H3V10h4Zm0 9h10a2 2 0 0 0 2-1.5l1.5-5A2 2 0 0 0 18.6 9H14l.7-3.4A2 2 0 0 0 12.7 3L7 10Z"/></svg></button></div></div>`);bindSources();$('#chatMessages').appendChild(suggestions);suggestions.hidden=false;renderSuggestions();$('#chatMessages').scrollTop=$('#chatMessages').scrollHeight},650)}
 
-function bindSources(){document.querySelectorAll('[data-ref]').forEach(b=>b.onclick=()=>openSource(b.dataset.ref))}
-function openSource(id){const s=sources[id];$('#sourceTitle').textContent=s.title;$('#sourceId').textContent=id;$('#matchScore').textContent=s.score;$('#sourceText').textContent=s.text;$('#quizModal').classList.remove('open');$('#sourceDrawer').classList.add('open');$('#sourceDrawer').setAttribute('aria-hidden','false');$('#backdrop').classList.add('open')}
-function closeLayers(){['#sourceDrawer','#quizModal','#slideNav'].forEach(x=>$(x).classList.remove('open'));$('#sourceDrawer').setAttribute('aria-hidden','true');$('#quizModal').setAttribute('aria-hidden','true');$('#backdrop').classList.remove('open')}
-
-function openQuiz(){closeLayers();$('#quizSetup').hidden=false;$('#quizPlay').hidden=true;$('#quizResult').hidden=true;$('#currentSlideScope').textContent=`Slide ${currentSlide+1} · ${slides[currentSlide].title}`;$('#quizModal').classList.add('open');$('#quizModal').setAttribute('aria-hidden','false');$('#backdrop').classList.add('open')}
-function scopedFallbacks(slideIndex){const s=slides[slideIndex],mainRef=s.refs[0];return[
-  {slide:slideIndex,q:`Thông điệp chính của slide “${s.title}” là gì?`,o:[s.desc,'Luôn chọn model lớn nhất','Tự động hoá mọi bước ngay lập tức','Chỉ cần đo số lượt truy cập'],a:0,e:`Slide nhấn mạnh: ${s.desc}`,ref:mainRef},
-  {slide:slideIndex,q:'Phát biểu nào phù hợp nhất với nội dung slide này?',o:[`Chủ đề trọng tâm là ${s.short.toLowerCase()}`,'Công nghệ luôn quan trọng hơn vấn đề','Không cần con người kiểm tra AI','Mọi sản phẩm đều cần agent'],a:0,e:`Nội dung slide tập trung vào “${s.short}”.`,ref:mainRef},
-  {slide:slideIndex,q:'Khi áp dụng kiến thức trong slide, hành động phù hợp nhất là gì?',o:['Bám vào nguyên tắc của slide và kiểm chứng bằng dữ liệu','Bỏ qua bối cảnh người dùng','Chọn giải pháp phức tạp nhất','Không cần đánh giá kết quả'],a:0,e:'Kiến thức trong bài cần được áp dụng theo bối cảnh và kiểm chứng thay vì giả định.',ref:s.refs[1]||mainRef},
-  {slide:slideIndex,q:'Đoạn transcript nào là một trong các nguồn trực tiếp của slide này?',o:[s.refs[0],'T99-999','Không có transcript','Nguồn mạng xã hội'],a:0,e:`Slide này được liên kết trực tiếp với đoạn ${s.refs[0]} trong transcript.`,ref:mainRef}
-]}
-function makeQuiz(){let pool;if(quiz.scope==='slide'){pool=quizBank.filter(x=>x.slide===currentSlide);const extra=scopedFallbacks(currentSlide);pool=[...pool,...extra].slice(0,quiz.count)}else{const pickedSlides=Array.from({length:quiz.count},(_,i)=>Math.round(i*(slides.length-1)/Math.max(1,quiz.count-1)));pool=pickedSlides.map(slideIndex=>quizBank.find(x=>x.slide===slideIndex)||scopedFallbacks(slideIndex)[0])}quiz.items=pool;quiz.index=0;quiz.selected=null;quiz.checked=false;quiz.score=0;$('#quizSetup').hidden=true;$('#quizResult').hidden=true;$('#quizPlay').hidden=false;renderQuestion()}
-function renderQuestion(){const item=quiz.items[quiz.index],total=quiz.items.length;$('#quizPosition').textContent=`Câu ${quiz.index+1} / ${total}`;$('#quizScore').textContent=`${quiz.score} điểm`;$('#quizProgress').style.width=`${quiz.index/total*100}%`;$('#questionLabel').textContent=`SLIDE ${item.slide+1} · CHỌN MỘT ĐÁP ÁN`;$('#quizQuestion').textContent=item.q;$('#quizExplanation').hidden=true;$('#nextQuestion').textContent='Kiểm tra đáp án';$('#nextQuestion').disabled=true;$('#quizOptions').innerHTML=item.o.map((o,i)=>`<button class="quiz-option" data-option="${i}"><span class="option-letter">${String.fromCharCode(65+i)}</span><span>${o}</span></button>`).join('');document.querySelectorAll('.quiz-option').forEach(b=>b.onclick=()=>{if(quiz.checked)return;quiz.selected=Number(b.dataset.option);document.querySelectorAll('.quiz-option').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');$('#nextQuestion').disabled=false})}
-function advanceQuiz(){const item=quiz.items[quiz.index];if(!quiz.checked){quiz.checked=true;const ok=quiz.selected===item.a;if(ok)quiz.score++;$('#quizScore').textContent=`${quiz.score} điểm`;document.querySelectorAll('.quiz-option').forEach(b=>{const i=Number(b.dataset.option);b.classList.add('locked');if(i===item.a)b.classList.add('correct');if(i===quiz.selected&&!ok)b.classList.add('wrong')});$('#quizExplanation').innerHTML=`<strong>${ok?'Chính xác!':'Chưa chính xác.'}</strong> ${item.e} <button data-ref="${item.ref}">Xem nguồn ${item.ref} ↗</button>`;$('#quizExplanation').hidden=false;bindSources();$('#nextQuestion').textContent=quiz.index===quiz.items.length-1?'Xem kết quả':'Câu tiếp theo';return}if(quiz.index<quiz.items.length-1){quiz.index++;quiz.selected=null;quiz.checked=false;renderQuestion()}else showResult()}
-function showResult(){const total=quiz.items.length,pc=Math.round(quiz.score/total*100);$('#quizPlay').hidden=true;$('#quizResult').hidden=false;$('#finalScore').textContent=`${quiz.score}/${total}`;$('#correctAnswers').textContent=quiz.score;$('#accuracy').textContent=`${pc}%`;$('#resultTitle').textContent=pc>=80?'Bạn nắm bài rất tốt!':pc>=50?'Bạn đang tiến bộ!':'Cùng xem lại slide nhé!';$('#resultMessage').textContent=pc>=80?'Bạn đã hiểu chắc các ý chính trong phạm vi vừa chọn.':'Hãy mở lại các trích dẫn để củng cố phần còn nhầm lẫn.'}
-
-$('#prevSlide').onclick=()=>goSlide(currentSlide-1);$('#nextSlide').onclick=()=>goSlide(currentSlide+1);$('#askSlide').onclick=()=>{if(innerWidth<=1080)$('#chatPanel').classList.add('open');$('#chatInput').focus()};$('#chatFab').onclick=()=>$('#chatPanel').classList.add('open');$('#closeChat').onclick=()=>$('#chatPanel').classList.remove('open');$('#openSlides').onclick=()=>{$('#slideNav').classList.add('open');$('#backdrop').classList.add('open')};$('#closeSlides').onclick=closeLayers;$('#backdrop').onclick=closeLayers;$('#closeSource').onclick=closeLayers;$('#openQuiz').onclick=openQuiz;$('#closeQuiz').onclick=closeLayers;$('#finishQuiz').onclick=closeLayers;$('#retryQuiz').onclick=makeQuiz;$('#generateQuiz').onclick=makeQuiz;$('#nextQuestion').onclick=advanceQuiz;
-$('#contextAll').onclick=()=>{chatAll=!chatAll;$('#contextSlide').textContent=chatAll?'Tất cả slides':`Slide ${currentSlide+1}`;$('#contextAll').textContent=chatAll?'Theo slide':'Đổi'};
-document.querySelectorAll('.scope-card').forEach(b=>b.onclick=()=>{document.querySelectorAll('.scope-card').forEach(x=>x.classList.remove('active'));b.classList.add('active');quiz.scope=b.dataset.scope});document.querySelectorAll('.count-picker button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.count-picker button').forEach(x=>x.classList.remove('active'));b.classList.add('active');quiz.count=Number(b.dataset.count)});
-$('#chatForm').onsubmit=e=>{e.preventDefault();ask($('#chatInput').value)};$('#chatInput').oninput=e=>{e.target.style.height='auto';e.target.style.height=`${Math.min(e.target.scrollHeight,80)}px`;$('#sendChat').disabled=!e.target.value.trim()};$('#chatInput').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask(e.target.value)}};
-
-function moveSelectionToChat(){
-  const selection=window.getSelection();
-  if(!selection||selection.isCollapsed)return;
-  const selectedText=selection.toString().replace(/\s+/g,' ').trim();
-  if(selectedText.length<2)return;
-  const range=selection.getRangeAt(0);
-  const node=range.commonAncestorContainer.nodeType===Node.TEXT_NODE?range.commonAncestorContainer.parentElement:range.commonAncestorContainer;
-  if(!$('#slideCanvas').contains(node))return;
-  const excerpt=selectedText.length>500?`${selectedText.slice(0,500)}…`:selectedText;
-  const input=$('#chatInput');
-  input.value=`“${excerpt}”\n\n`;
-  input.dispatchEvent(new Event('input',{bubbles:true}));
-  if(innerWidth<=1080)$('#chatPanel').classList.add('open');
-  input.focus();
-  input.setSelectionRange(input.value.length,input.value.length);
-  document.querySelector('.selection-toast')?.remove();
-  const toast=document.createElement('div');
-  toast.className='selection-toast';
-  toast.innerHTML='<span>✓</span> Đã thêm đoạn bôi đen vào khung chat';
-  document.body.appendChild(toast);
-  setTimeout(()=>toast.remove(),1800);
+/**
+ * RENDER DANH SÁCH SLIDE (SIDEBAR)
+ */
+function renderNav() {
+  $('#slideList').innerHTML = slides.map((s, i) => `
+    <button class="slide-thumb ${i === currentSlide ? 'active' : ''}" onclick="goSlide(${i})">
+      <span class="thumb-number">${String(i + 1).padStart(2, '0')}</span>
+      <span class="thumb-preview">${esc(s.short)}</span>
+      <span class="thumb-copy"><strong>${esc(s.title)}</strong><small>${s.time}</small></span>
+    </button>
+  `).join('');
 }
-$('#slideCanvas').addEventListener('pointerup',()=>setTimeout(moveSelectionToChat,0));
 
-$('#fullscreen').onclick=()=>{const el=$('.lesson-stage');if(!document.fullscreenElement)el.requestFullscreen?.();else document.exitFullscreen?.()};document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')goSlide(currentSlide-1);if(e.key==='ArrowRight')goSlide(currentSlide+1);if(e.key==='Escape')closeLayers()});
-renderSlide();
+/**
+ * GỢI Ý CÂU HỎI
+ */
+function renderSuggestions() {
+  const p = slides[currentSlide].prompts;
+  $('#suggestedQuestions').innerHTML = `<span>Gợi ý theo slide ${currentSlide + 1}</span>${p.map(x => `<button onclick="ask('${x}')">${x}</button>`).join('')}`;
+}
+
+/**
+ * HỆ THỐNG TRẢ LỜI RAG (MOCKUP)
+ */
+function findAnswer(q) {
+  const l = q.toLowerCase();
+  let text, refs;
+  
+  if (l.includes('automation') || l.includes('augmentation') || l.includes('giám sát')) {
+    text = '<p><strong>Automation</strong> là AI làm thay, còn <strong>Augmentation</strong> là AI hỗ trợ trong khi con người vẫn quyết định.</p><p>Giảng viên khuyến nghị bắt đầu với Augmentation, theo dõi chất lượng rồi mới tăng dần mức tự động hoá—đặc biệt khi hậu quả của lỗi cao.</p>';
+    refs = ['T02-032', 'T02-033'];
+  } 
+  else if (l.includes('north star') || l.includes('lượt truy cập') || l.includes('đo lường')) {
+    text = '<p>North Star Metric là chỉ số phản ánh <strong>giá trị cuối cùng</strong> sản phẩm tạo ra. Với sản phẩm học tập, đó nên là kết quả học tập tốt hơn.</p><p>Lượt truy cập hay thời gian sử dụng chỉ là chỉ số trung gian và chưa tự chứng minh người học tiến bộ.</p>';
+    refs = ['T02-024', 'T02-025'];
+  } 
+  else if (l.includes('rule') || l.includes('workflow') || l.includes('agent')) {
+    text = '<p>Nếu bài toán có quy tắc rõ, hãy ưu tiên <strong>rule-based</strong>. Khi cần nhiều bước có LLM và gate kiểm tra, dùng workflow. Agent chỉ nên đến sau khi cách đơn giản chạm trần.</p>';
+    refs = ['T02-036', 'T02-037'];
+  } 
+  else if (l.includes('mơ hồ') || l.includes('bắt đầu') || l.includes('ba câu') || l.includes('ví dụ')) {
+    text = '<p>Đừng bắt đầu từ câu “dùng AI nào”, mà hãy làm rõ <strong>ai đang gặp vấn đề, họ tắc ở bước nào và hậu quả là gì</strong>.</p><p>Ví dụ: thay vì “làm chatbot AI”, hãy xác định “học viên đang xem lại slide cần tìm nhanh lời giải thích có nguồn để tiếp tục học”.</p>';
+    refs = ['T01-001', 'T01-004', 'T01-005'];
+  } 
+  else {
+    const s = slides[currentSlide];
+    text = `<p>Mình tìm thấy nội dung gần nhất trong transcript của <strong>Slide ${currentSlide + 1}</strong>: ${esc(s.desc)}</p><p>Bạn có thể hỏi cụ thể hơn để mình truy xuất đúng đoạn nguồn.</p>`;
+    refs = s.refs;
+  }
+  return { text, refs };
+}
+
+window.ask = function(raw) {
+  const q = raw.trim();
+  if (!q) return;
+
+  const suggestions = $('#suggestedQuestions');
+  suggestions.hidden = true;
+
+  // Thêm tin nhắn user
+  $('#chatMessages').insertAdjacentHTML('beforeend', `
+    <div class="user-message"><div>${esc(q)}</div></div>
+    <div class="ai-message" id="typing"><span class="mini-ai">✦</span><div class="typing"><i></i><i></i><i></i></div></div>
+  `);
+  
+  $('#chatInput').value = '';
+  $('#sendChat').disabled = true;
+  $('#chatMessages').scrollTop = $('#chatMessages').scrollHeight;
+
+  setTimeout(() => {
+    document.querySelector('#typing')?.remove();
+    const a = findAnswer(q);
+    const cites = a.refs.map(r => `<button onclick="openSource('${r}')">${r} ↗</button>`).join('');
+    
+    $('#chatMessages').insertAdjacentHTML('beforeend', `
+      <div class="rag-answer">
+        <div class="answer-label"><i></i>ĐÃ TÌM TRONG TRANSCRIPT</div>
+        <div class="ai-message">
+          <span class="mini-ai">✦</span>
+          <div class="message-content">${a.text}<div class="citation-row">${cites}</div></div>
+        </div>
+        <div class="answer-tools">
+          <span>${a.refs.length} đoạn nguồn · vừa xong</span>
+          <button aria-label="Hữu ích"><svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M7 10v10H3V10h4Zm0 9h10a2 2 0 0 0 2-1.5l1.5-5A2 2 0 0 0 18.6 9H14l.7-3.4A2 2 0 0 0 12.7 3L7 10Z"/></svg></button>
+        </div>
+      </div>
+    `);
+    
+    $('#chatMessages').appendChild(suggestions);
+    suggestions.hidden = false;
+    $('#chatMessages').scrollTop = $('#chatMessages').scrollHeight;
+  }, 650);
+}
+
+/**
+ * QUẢN LÝ SOURCE DRAWER & MODAL
+ */
+window.openSource = function(id) {
+  const s = sources[id];
+  if(!s) return;
+  $('#sourceTitle').textContent = s.title;
+  $('#sourceId').textContent = id;
+  $('#matchScore').textContent = s.score;
+  $('#sourceText').textContent = s.text;
+  
+  $('#quizModal').classList.remove('open');
+  $('#sourceDrawer').classList.add('open');
+  $('#sourceDrawer').setAttribute('aria-hidden', 'false');
+  $('#backdrop').classList.add('open');
+}
+
+function closeLayers() {
+  ['#sourceDrawer', '#quizModal', '#slideNav'].forEach(x => $(x).classList.remove('open'));
+  $('#sourceDrawer').setAttribute('aria-hidden', 'true');
+  $('#quizModal').setAttribute('aria-hidden', 'true');
+  $('#backdrop').classList.remove('open');
+}
+
+/**
+ * HỆ THỐNG QUIZ
+ */
+window.openQuiz = function() {
+  closeLayers();
+  $('#quizSetup').hidden = false;
+  $('#quizPlay').hidden = true;
+  $('#quizResult').hidden = true;
+  $('#quizModal').classList.add('open');
+  $('#quizModal').setAttribute('aria-hidden', 'false');
+  $('#backdrop').classList.add('open');
+}
+
+function scopedFallbacks(slideIndex) {
+  const s = slides[slideIndex];
+  const mainRef = s.refs[0];
+  return [
+    { slide: slideIndex, q: `Thông điệp chính của slide “${s.title}” là gì?`, o: [s.desc, 'Luôn chọn model lớn nhất', 'Tự động hoá mọi bước ngay lập tức', 'Chỉ cần đo số lượt truy cập'], a: 0, e: `Slide nhấn mạnh: ${s.desc}`, ref: mainRef }
+  ];
+}
+
+window.makeQuiz = function() {
+  let pool;
+  if (quiz.scope === 'slide') {
+    pool = quizBank.filter(x => x.slide === currentSlide);
+    if (pool.length === 0) pool = scopedFallbacks(currentSlide);
+  } else {
+    pool = quizBank;
+  }
+  
+  quiz.items = [...pool].sort(() => 0.5 - Math.random()).slice(0, quiz.count);
+  quiz.index = 0; quiz.score = 0; quiz.selected = null; quiz.checked = false;
+  
+  $('#quizSetup').hidden = true;
+  $('#quizPlay').hidden = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const item = quiz.items[quiz.index];
+  const total = quiz.items.length;
+  $('#quizPosition').textContent = `Câu ${quiz.index + 1} / ${total}`;
+  $('#quizScore').textContent = `${quiz.score} điểm`;
+  $('#quizProgress').style.width = `${(quiz.index / total) * 100}%`;
+  $('#quizQuestion').textContent = item.q;
+  $('#quizExplanation').hidden = true;
+  $('#nextQuestion').textContent = 'Kiểm tra đáp án';
+  $('#nextQuestion').disabled = true;
+  
+  $('#quizOptions').innerHTML = item.o.map((o, i) => `
+    <button class="quiz-option" onclick="selectOption(${i})">
+      <span class="option-letter">${String.fromCharCode(65 + i)}</span>
+      <span>${esc(o)}</span>
+    </button>
+  `).join('');
+}
+
+window.selectOption = function(i) {
+  if (quiz.checked) return;
+  quiz.selected = i;
+  document.querySelectorAll('.quiz-option').forEach((opt, idx) => {
+    opt.classList.toggle('selected', idx === i);
+  });
+  $('#nextQuestion').disabled = false;
+}
+
+window.advanceQuiz = function() {
+  const item = quiz.items[quiz.index];
+  if (!quiz.checked) {
+    quiz.checked = true;
+    const isCorrect = quiz.selected === item.a;
+    if (isCorrect) quiz.score++;
+    
+    document.querySelectorAll('.quiz-option').forEach((opt, idx) => {
+      opt.classList.add('locked');
+      if (idx === item.a) opt.classList.add('correct');
+      if (idx === quiz.selected && !isCorrect) opt.classList.add('wrong');
+    });
+    
+    $('#quizExplanation').innerHTML = `<strong>${isCorrect ? 'Chính xác!' : 'Chưa đúng.'}</strong> ${item.e} <button onclick="openSource('${item.ref}')">Xem nguồn ${item.ref} ↗</button>`;
+    $('#quizExplanation').hidden = false;
+    $('#nextQuestion').textContent = quiz.index === quiz.items.length - 1 ? 'Xem kết quả' : 'Câu tiếp theo';
+  } else {
+    if (quiz.index < quiz.items.length - 1) {
+      quiz.index++; quiz.selected = null; quiz.checked = false;
+      renderQuestion();
+    } else {
+      showResult();
+    }
+  }
+}
+
+function showResult() {
+  $('#quizPlay').hidden = true;
+  $('#quizResult').hidden = false;
+  const total = quiz.items.length;
+  const pc = Math.round((quiz.score / total) * 100);
+  $('#finalScore').textContent = `${quiz.score}/${total}`;
+  $('#correctAnswers').textContent = quiz.score;
+  $('#accuracy').textContent = `${pc}%`;
+  $('#resultTitle').textContent = pc >= 80 ? 'Bạn nắm bài rất tốt!' : pc >= 50 ? 'Bạn đang tiến bộ!' : 'Cùng xem lại slide nhé!';
+}
+
+// --- GÁN SỰ KIỆN ---
+$('#prevSlide').onclick = () => goSlide(currentSlide - 1);
+$('#nextSlide').onclick = () => goSlide(currentSlide + 1);
+$('#closeChat').onclick = () => $('#chatPanel').classList.remove('open');
+$('#chatFab').onclick = () => $('#chatPanel').classList.add('open');
+$('#openSlides').onclick = () => { $('#slideNav').classList.add('open'); $('#backdrop').classList.add('open'); };
+$('#closeSlides').onclick = closeLayers;
+$('#backdrop').onclick = closeLayers;
+$('#closeSource').onclick = closeLayers;
+$('#openQuiz').onclick = openQuiz;
+$('#closeQuiz').onclick = closeLayers;
+$('#finishQuiz').onclick = closeLayers;
+$('#retryQuiz').onclick = () => { $('#quizResult').hidden = true; $('#quizSetup').hidden = false; };
+$('#generateQuiz').onclick = makeQuiz;
+$('#nextQuestion').onclick = advanceQuiz;
+$('#askSlide').onclick = () => { $('#chatPanel').classList.add('open'); $('#chatInput').focus(); };
+
+$('#chatForm').onsubmit = e => { e.preventDefault(); ask($('#chatInput').value); };
+$('#chatInput').oninput = e => { 
+  e.target.style.height = 'auto'; 
+  e.target.style.height = `${Math.min(e.target.scrollHeight, 80)}px`;
+  $('#sendChat').disabled = !e.target.value.trim(); 
+};
+
+// Selection to Chat
+$('#slideCanvas').addEventListener('pointerup', () => {
+  setTimeout(() => {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed) return;
+    const text = selection.toString().trim();
+    if (text.length < 3) return;
+    
+    const input = $('#chatInput');
+    input.value = `“${text}”\n\n`;
+    $('#chatPanel').classList.add('open');
+    input.focus();
+    $('#sendChat').disabled = false;
+  }, 0);
+});
+
+// Fullscreen
+$('#fullscreen').onclick = () => {
+  const el = $('.lesson-stage');
+  if (!document.fullscreenElement) el.requestFullscreen?.();
+  else document.exitFullscreen?.();
+};
+
+// Keyboard Nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') goSlide(currentSlide - 1);
+  if (e.key === 'ArrowRight') goSlide(currentSlide + 1);
+  if (e.key === 'Escape') closeLayers();
+});
+
+// Quiz Config Toggles
+document.querySelectorAll('.scope-card').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.scope-card').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    quiz.scope = b.dataset.scope;
+  };
+});
+document.querySelectorAll('.count-picker button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.count-picker button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    quiz.count = Number(b.dataset.count);
+  };
+});
+
+// KHỞI CHẠY
+initPDF();

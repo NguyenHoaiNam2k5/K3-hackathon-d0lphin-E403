@@ -1,0 +1,27 @@
+/* Overrides for balanced slide layout */
+.workspace{grid-template-columns:224px minmax(640px,1fr) 320px !important;gap:12px}
+
+/* Make slide canvas more prominent and centered */
+.slide-canvas{width:100% !important;max-width:1100px !important;min-height:420px !important;overflow:hidden;border-radius:10px;background:#fff;box-shadow:0 12px 40px rgba(35,43,65,.12);display:flex;align-items:center;justify-content:center;padding:18px}
+
+/* Ensure rendered PDF canvas scales responsively */
+#pdfPageCanvas{width:100% !important;height:auto !important;display:block}
+
+/* Text layer (invisible but selectable) */
+.textLayer{pointer-events:auto;position:absolute;left:0;top:0;overflow:hidden}
+.textLayer span{position:absolute;white-space:pre;font-family: sans-serif;line-height:1;pointer-events:auto;color:transparent}
+.textLayer span::selection{background:rgba(120,90,240,0.25);color:#111}
+
+/* Thumbnails slightly smaller for balance */
+.thumb-preview{height:44px}
+.slide-thumb{padding:7px 6px}
+
+@media(max-width:1200px){
+  .workspace{grid-template-columns:210px 1fr !important}
+  .slide-canvas{min-height:320px}
+}
+
+@media(max-width:750px){
+  .workspace{grid-template-columns:1fr !important}
+  .slide-canvas{max-width:100%}
+}
