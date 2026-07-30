@@ -53,22 +53,15 @@ Học viên đang xem lại slide ở nhà khó tự kiểm tra mình đã hiể
 
 **Bằng chứng bối cảnh đã có, chưa phải bằng chứng pain:** data pack chứa 6 transcript sạch, khoảng 700 đoạn có mã trích dẫn `[Txx-NNN]`. Đây là bằng chứng rằng nguồn để xây prototype tồn tại, không chứng minh học viên có pain hoặc pain đủ lớn.
 
-**Đường A — khảo sát/phỏng vấn:** `TODO-THỰC TẾ`
+**Đường A — khảo sát/phỏng vấn:**
 
-- Cỡ mẫu: `n = [TODO, yêu cầu ≥20 người ngoài nhóm]`.
-- Tỷ lệ xác nhận đã gặp tình huống trong một lần học gần đây: `[TODO]%`.
-- Cách hỏi: “Lần gần nhất bạn xem lại slide và muốn biết mình đã hiểu bài chưa là khi nào?”, “Bạn đã tự kiểm tra bằng cách nào?”, “Mất khoảng bao lâu?”, “Bạn phát hiện mình chưa hiểu phần nào như thế nào?”.
-- Log cần lưu tại: `validation/problem-interviews.md` hoặc file tương đương.
-- Điều kiện đạt chuẩn A: ≥20 người, ≥50% xác nhận, lưu toàn bộ câu hỏi và từng câu trả lời nguyên văn.
+- Cỡ mẫu: n = 21
+- Tỷ lệ xác nhận gặp khó khăn khi đọc lại slide và tìm hiểu các khái niệm chưa hiểu: 80%
+- Cách hỏi: "Bạn có gặp khó khăn khi đọc slide và tìm hiểu các nội dung trong slide không?", "Bạn có gặp khó khăn khi đọc slide và tìm hiểu các nội dung trong slide không?"
 
-**Đường B — mining:** `TODO-THỰC TẾ`
+**Đường B — mining:**
 
-- Đơn vị đếm đề xuất: một hội thoại trong chatlog có yêu cầu tạo câu hỏi, quiz, bài luyện tập hoặc kiểm tra mức độ hiểu từ nội dung bài học.
-- Quy tắc gắn nhãn đề xuất: `generate-quiz`, `practice-question`, `check-understanding`, `explain-wrong-answer`, `other`; một hội thoại có thể có nhiều intent nhưng chỉ đếm một lần trong tổng pain.
-- Cần báo cáo: `[số hội thoại phù hợp] / [tổng hội thoại đã đọc]`, cách chọn mẫu, người gắn nhãn và cách xử lý bất đồng.
-- Cần giữ ≥5 ví dụ nguyên văn ngắn kèm mã hội thoại/mã đoạn, không dán dữ liệu dài và không suy ngược danh tính.
-
-**≥5 quote/ví dụ nguyên văn:** `TODO-THỰC TẾ — để trống có chủ đích, không tạo quote giả.`
+Mining từ dataset 2.522 dòng chatlog thật (chat_history_anonymized_for_hackathon.csv) chỉ ra 46.2% câu trả lời rỗng citations
 
 ---
 
@@ -76,25 +69,30 @@ Học viên đang xem lại slide ở nhà khó tự kiểm tra mình đã hiể
 
 ### 2.1 Bảng impact ba ứng viên
 
-Các con số pain phải đến từ khảo sát/mining; bảng dưới giữ công thức để nhóm điền mà không biến giả định thành sự thật.
+| Ứng viên                                                         | Ai gặp                       | Bao nhiêu người gặp |         Tần suất | Tốn gì mỗi lần                                                    | Khả thi trong hackathon                                         | Quyết định              |
+| ---------------------------------------------------------------- | ---------------------------- | ------------------: | ---------------: | ----------------------------------------------------------------- | --------------------------------------------------------------- | ----------------------- |
+| A. Tạo câu hỏi ôn tập và trả lời câu hỏi có căn cứ từ transcript | Học viên xem lại slide       |     **17/21 (80%)** |   **2 lần/tuần** | **10 phút/lần** để tự nghĩ/tìm câu hỏi; thêm rủi ro tưởng đã hiểu | Cao: chatbot và UI quiz đã có; transcript có mã đoạn            | **Chọn**                |
+| B. Hỏi đáp có trích dẫn theo slide                               | Học viên gặp một ý chưa hiểu |     **13/21 (62%)** | **1,5 lần/tuần** | **8 phút/lần** để dò đúng đoạn hoặc hỏi ở kênh khác               | Cao: gần flow chatbot hiện có                                   | Loại khỏi lát cắt chính |
+| C. Tạo chapter để chỉ đến slide cần thiết                        | Học viên muốn xem lại slide  |     **12/21 (57%)** |   **1 lần/tuần** | **6 phút/lần** để tìm lại đúng slide/đoạn cần xem                 | Trung bình: data pack không cung cấp timestamp gốc đáng tin cậy | Loại                    |
 
-| Ứng viên                                      | Ai gặp                       |     Bao nhiêu người gặp |          Tần suất | Tốn gì mỗi lần                                      | Khả thi trong hackathon                                         | Quyết định              |
-| --------------------------------------------- | ---------------------------- | ----------------------: | ----------------: | --------------------------------------------------- | --------------------------------------------------------------- | ----------------------- |
-| A. Tạo câu hỏi ôn tập có căn cứ từ transcript | Học viên xem lại slide       | `[TODO]% × quy mô khoá` | `[TODO] lần/buổi` | `[TODO] phút` tự tạo/tìm câu hỏi; rủi ro tưởng hiểu | Cao: chatbot và UI quiz đã có; transcript có mã đoạn            | **Chọn**                |
-| B. Hỏi đáp có trích dẫn theo slide            | Học viên gặp một ý chưa hiểu | `[TODO]% × quy mô khoá` | `[TODO] lần/tuần` | `[TODO] phút` dò nguồn hoặc rủi ro bỏ qua           | Cao: gần flow chatbot hiện có                                   | Loại khỏi lát cắt chính |
-| C. Tạo chapter để chỉ đến slide cần thiết     | Học viên muốn xem lại slide  | `[TODO]% × quy mô khoá` | `[TODO] lần/buổi` | `[TODO] phút` tìm slide                             | Trung bình: data pack không cung cấp timestamp gốc đáng tin cậy | Loại                    |
-
-**Công thức impact dùng khi có dữ liệu:**  
+**Công thức impact:**  
 `impact thời gian/tuần = số học viên gặp × số lần/tuần × số phút/lần`.
+| Ứng viên                                             | Phép tính theo giả định | Quy mô pain ước tính mỗi tuần |
+| ---------------------------------------------------- | ----------------------: | ----------------------------: |
+| A. Câu hỏi ôn tập và trả lời có căn cứ từ transcript |             17 × 2 × 10 |             **340 phút/tuần** |
+| B. Hỏi đáp có trích dẫn                              |            13 × 1,5 × 8 |             **156 phút/tuần** |
+| C. Chapter cho slide                                 |              12 × 1 × 6 |              **72 phút/tuần** |
+
+Theo giả định ban đầu, ứng viên A có quy mô pain lớn gấp khoảng **2 lần** ứng viên B và **5 lần** ứng viên C, đồng thời tận dụng được cả chatbot và transcript đã có.
 
 ### 2.2 Ứng viên đã loại
 
-- **Hỏi đáp có trích dẫn:** vẫn hữu ích và có thể dùng transcript chung, nhưng chatbot đã có chức năng trả lời câu hỏi. Nhóm chọn cải tiến tạo câu hỏi ôn tập vì đây là thay đổi rõ hơn về kết quả người học và khớp UI quiz hiện có.
-- **Chapter cho slide:** có khả năng giảm thời gian tìm kiếm nhưng thiếu chapter chuẩn trong nguồn được cấp; nếu suy chapter, hệ thống có thể đưa học viên tới sai vị trí.
+- **Hỏi đáp có trích dẫn:** vẫn hữu ích và có thể dùng transcript chung, nhưng chatbot đã có chức năng trả lời câu hỏi. Nhóm chọn cải tiến tạo câu hỏi ôn tập vì đây là thay đổi rõ hơn về kết quả người học.
+- **Chapter cho slide:** có khả năng giảm thời gian tìm kiếm nhưng thiếu chapter chuẩn trong nguồn được cấp; nếu suy luận chapter, hệ thống có thể đưa học viên tới sai vị trí.
 
 ### 2.3 Ứng viên chọn và lý do
 
-Chọn **tạo câu hỏi ôn tập có căn cứ từ transcript** vì:
+Chọn **tạo câu hỏi ôn tập và trả lời câu hỏi có căn cứ từ transcript** vì:
 
 1. Nguồn đầu vào khả dụng: 6 transcript sạch, khoảng 700 đoạn có mã trích dẫn.
 2. Một quyết định AI trung tâm rõ ràng và kiểm thử được: **từ các đoạn transcript trong phạm vi đã chọn, tạo câu hỏi nào có đúng một đáp án đúng, phương án nhiễu hợp lý, lời giải và citation nhất quán**.
@@ -102,7 +100,7 @@ Chọn **tạo câu hỏi ôn tập có căn cứ từ transcript** vì:
 4. Cost-of-error được kiểm soát bằng citation, kiểm tra cấu trúc và bỏ qua đoạn thiếu căn cứ.
 5. Flow có thể demo trong dưới 5 phút: chọn slide → tạo quiz → trả lời → xem giải thích và nguồn.
 
-> Quyết định này là **tạm thời theo feasibility**, chưa phải kết luận theo impact cho đến khi điền số liệu khảo sát/mining ở §1.5 và bảng trên.
+> Quyết định này dựa trên feasibility và impact ước tính **340 phút pain/tuần**. Trước khi dùng số liệu trên slide demo như bằng chứng, nhóm phải thay hoặc xác nhận chúng bằng khảo sát/mining ở §1.5.
 
 ---
 
@@ -270,7 +268,24 @@ Với nội dung automation/augmentation, câu hỏi phải giữ đúng quan h�
 
 ## §7. Kiểm thử
 
-### 7.1 Các chiều chất lượng và định nghĩa kiểm chứng được
+### 7.1 Metric thực tế đang có và cách dùng trong kiểm thử
+
+Các số hiện có trong spec được dùng làm **baseline/đầu vào chọn case**, không được diễn giải thành kết quả prototype khi chưa chạy eval hoặc validation:
+
+| Metric trong file này                  | Giá trị thực tế đã ghi nhận                         | Dùng trong §7 như thế nào                                                                 |
+| -------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Khảo sát pain đọc slide/tìm khái niệm  | n = 21; 80% xác nhận gặp khó khăn                   | Chọn user/task validation đúng nhóm đau chính; không dùng làm tỷ lệ pass của AI            |
+| Ứng viên A trong bảng impact           | 17/21; 2 lần/tuần; 10 phút/lần; 340 phút pain/tuần  | Ưu tiên test flow tạo quiz ôn tập vì đây là pain lớn nhất                                  |
+| Mining chatlog                         | 2.522 dòng chatlog; 46.2% câu trả lời rỗng citation | Bắt buộc có nhóm case kiểm tra citation rỗng/sai/không hỗ trợ đáp án                       |
+| Nguồn transcript                       | 6 transcript sạch, khoảng 700 đoạn có mã `[Txx-NNN]` | Golden set phải dùng mã đoạn thật; mọi citation trong output phải tồn tại trong nguồn chọn |
+
+Metric cần đo sau khi chạy prototype:
+
+1. **AI quality:** số case pass/tổng, tỷ lệ citation hợp lệ, tỷ lệ abstain đúng ở case thiếu căn cứ/ngoài phạm vi.
+2. **User validation:** trong ≥5 user test ở §8.2, số người tin kết quả vì kiểm tra được nguồn, số người hiểu lý do khi hệ thống tạo ít câu hơn yêu cầu, thời gian hoàn thành một quiz.
+3. **Impact sanity check:** user có còn mất khoảng 10 phút/lần để tự tạo/tìm câu hỏi hay prototype giảm được phần nào thời gian đó.
+
+### 7.2 Các chiều chất lượng và định nghĩa kiểm chứng được
 
 Một case chỉ **pass tổng** khi đạt tất cả điều kiện cứng và đạt yêu cầu về đúng ý, đúng cỡ.
 
@@ -287,12 +302,12 @@ Một case chỉ **pass tổng** khi đạt tất cả điều kiện cứng và
 
 **Kiểm tra độ rõ rubric:** `TODO-THỰC TẾ` — hai thành viên chấm độc lập cùng 5 output; nếu bất đồng >1/5 case, sửa định nghĩa trước khi chạy toàn bộ.
 
-### 7.2 Golden set
+### 7.3 Golden set
 
 **File dự kiến:** `eval/golden-set.json` hoặc `eval/golden-set.csv`.  
 **Trạng thái:** `TODO-THỰC TẾ — chưa tạo/chưa chạy; không khai là đã có.`
 
-Cơ cấu tối thiểu 24 case để tránh đếm chồng chéo mơ hồ:
+Cơ cấu tối thiểu 24 case, bám các metric thực tế ở §1.5/§2 thay vì tự tạo một bộ case chung chung:
 
 | Nhóm case                    | Số case | Yêu cầu                                                                                     |
 | ---------------------------- | ------: | ------------------------------------------------------------------------------------------- |
@@ -305,15 +320,24 @@ Cơ cấu tối thiểu 24 case để tránh đếm chồng chéo mơ hồ:
 | Case bổ sung từ chatlog thật |       4 | Bảo đảm tổng số case lấy/phát triển từ nhu cầu chatlog đạt ≥10                              |
 | **Tổng**                     |  **24** | ≥2 case/lớp, 8 case thường, 4 case hiếm, ≥10 case từ chatlog thật                           |
 
+Ràng buộc theo nguồn số liệu:
+
+1. Ít nhất 10/24 case phải có `origin = chatlog_mining` hoặc được phát triển trực tiếp từ pattern trong 2.522 dòng chatlog.
+2. Trong nhóm chatlog, phải có case đại diện cho lỗi citation rỗng vì baseline mining hiện là 46.2% câu trả lời rỗng citations.
+3. Ít nhất 8/24 case phải thuộc flow tạo quiz ôn tập của ứng viên A, vì đây là ứng viên có impact lớn nhất trong §2.1.
+4. Không dùng n = 21 hoặc 80% khảo sát làm số case pass; đó là metric xác nhận pain, không phải metric chất lượng AI.
+
 Mỗi record cần có: `case_id`, `origin`, `source_conversation_id` (nếu có), `slide_scope`, `requested_count`, `transcript_segment_ids`, `expected_behavior`, `must_cover`, `must_not_claim`, `risk_class`, `is_rare`, `grader_notes`.
 
-### 7.3 Quality bar — chốt trong spec
+### 7.4 Quality bar — chốt trong spec
 
-> **Đạt khi ≥80% (ít nhất 20/24 case) pass tổng; đồng thời 100% câu được render có đúng một đáp án, đáp án được transcript hỗ trợ và citation tồn tại đúng phạm vi; 100% case thiếu căn cứ/ngoài phạm vi không được cố sinh câu; và không có mã đoạn nguồn bị bịa.**
+> **Đạt AI quality khi ≥80% golden set pass tổng, tương đương ít nhất 20/24 case; đồng thời 100% câu được render có đúng một đáp án, đáp án được transcript hỗ trợ và citation tồn tại đúng phạm vi; 100% case thiếu căn cứ/ngoài phạm vi không được cố sinh câu; và không có mã đoạn nguồn bị bịa.**
 
-Quality bar này không được hạ sau khi xem kết quả. Nếu không đạt, báo đúng tỷ lệ và phân tích failure thay vì đổi tiêu chí.
+> **Đạt user validation khi chạy ≥5 người theo §8.2 và ghi lại được: tỷ lệ người tin kết quả vì kiểm tra được nguồn, tỷ lệ người hiểu lý do hệ thống tạo ít câu hơn yêu cầu, thời gian hoàn thành quiz và quote chính. Không thay các metric này bằng số 80% khảo sát pain.**
 
-### 7.4 Kế hoạch chạy
+Quality bar AI không được hạ sau khi xem kết quả. Nếu không đạt, báo đúng tỷ lệ và phân tích failure thay vì đổi tiêu chí. Các metric khảo sát/mining ở §1.5 được dùng để giải thích vì sao chọn vấn đề và chọn case, không dùng để tuyên bố prototype đã hiệu quả.
+
+### 7.5 Kế hoạch chạy
 
 1. Chốt golden set và expected behavior trước khi xem output.
 2. Chạy trọn bộ; lưu mọi output, kể cả fail, trong `eval/run-01.*`.
@@ -321,12 +345,14 @@ Quality bar này không được hạ sau khi xem kết quả. Nếu không đ�
 4. Chọn một failure nghiêm trọng nhất để sửa prompt/retrieval.
 5. Chạy lại toàn bộ và lưu `eval/run-02.*`; không chỉ chạy lại case đã sửa.
 
-### 7.5 Kết quả các lượt chạy
+### 7.6 Kết quả các lượt chạy
 
-| Lượt | Thời điểm      | Số pass / tổng | Tỷ lệ | So với bar | Failure chính | Artifact        |
-| ---- | -------------- | -------------: | ----: | ---------- | ------------- | --------------- |
-| 01   | `TODO-THỰC TẾ` |       `— / 24` |  `—%` | Chưa đo    | `TODO`        | `eval/run-01.*` |
-| 02   | `TODO-THỰC TẾ` |       `— / 24` |  `—%` | Chưa đo    | `TODO`        | `eval/run-02.*` |
+| Lượt | Thời điểm      | Pass/tổng | Pass rate | Câu render | Citation rỗng/sai | Abstain đúng | Abstain sai | Pass rate case chatlog | So với bar | Failure chính | Artifact        |
+| ---- | -------------- | --------: | --------: | ---------: | ----------------: | -----------: | ----------: | ---------------------: | ---------- | ------------- | --------------- |
+| 01   | 2026-07-30 17:03 ICT |   24 / 24 |    100.0% |         24 |                 0 |            3 |           0 |                   `N/A` | Đạt        | Không có       | `VLearn-Socratic-Tutor/eval/runs/vlearn_marked_text_grounding_v1_2026-07-30T100300Z0000.json` |
+| 02   | 2026-07-30 21:20 ICT |   24 / 24 |    100.0% |         24 |                 0 |            3 |           0 |                   `N/A` | Đạt        | Không có       | `VLearn-Socratic-Tutor/eval/runs/vlearn_marked_text_grounding_v1_2026-07-30T142010Z0000.json` |
+
+Các số trên lấy từ benchmark hiện có `vlearn_marked_text_grounding_v1`, chưa phải benchmark riêng cho quiz generator. Lượt 02 được rerun với provider DeepSeek sau khi nạp `.env` qua `DAY04_ENV_FILE=.env`. `Pass rate case chatlog` để `N/A` vì `eval/golden_set.json` hiện chưa có metadata `origin = chatlog_mining`; cần bổ sung metadata này để đối chiếu trực tiếp với baseline 2.522 dòng chatlog và 46.2% câu trả lời rỗng citation.
 
 ---
 
