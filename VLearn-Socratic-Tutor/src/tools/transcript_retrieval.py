@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any, Final
 
+from rank_bm25 import BM25Okapi
+
 from data_pack import TRANSCRIPT_DIR
 
 PARAGRAPH_RE: Final = re.compile(r"^\*\*\[(T\d{2}-\d{3})\]\*\*\s+(.*)$")
@@ -60,7 +62,8 @@ SEARCH_SYNONYMS: Final = {
     "token": ("token",),
     "vector": ("vector", "vectơ", "nhúng", "embedding"),
 }
-MAX_CONTEXT_CHUNKS: Final = 7
+MAX_CONTEXT_CHUNKS: Final = 9
+MIN_NEIGHBOR_SCORE: Final = 1.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,8 +82,18 @@ class SlideContext:
     slide_text: str
 
 
+@dataclass(frozen=True, slots=True)
+class TranscriptSearchIndex:
+    paragraphs: tuple[TranscriptParagraph, ...]
+    model: BM25Okapi
+
+
+def _tokens(value: str) -> list[str]:
+    return [word.lower() for word in WORD_RE.findall(value.replace("-", " ")) if len(word) > 1]
+
+
 def _words(value: str) -> set[str]:
-    return {word.lower() for word in WORD_RE.findall(value.replace("-", " ")) if len(word) > 1}
+    return set(_tokens(value))
 
 
 def _context_text(context: SlideContext) -> str:
@@ -95,6 +108,12 @@ def _expanded_query_terms(marked_text: str, context: SlideContext | None = None)
     for term in terms:
         expanded.update(SEARCH_SYNONYMS.get(term, (term,)))
     return expanded - STOPWORDS
+
+
+def _bm25_query(marked_text: str, context: SlideContext) -> list[str]:
+    marked_terms = sorted(_expanded_query_terms(marked_text))
+    context_terms = sorted(_expanded_query_terms("", context) - set(marked_terms))
+    return [*marked_terms, *marked_terms, *marked_terms, *context_terms]
 
 
 @lru_cache(maxsize=1)
@@ -116,31 +135,18 @@ def _load_transcript_paragraphs() -> tuple[TranscriptParagraph, ...]:
     return tuple(paragraphs)
 
 
-def _phrase_score(text: str, query_text: str) -> int:
-    text_lower = text.lower()
-    query_words = list(_words(query_text) - STOPWORDS)
-    score = 0
-    for word in query_words:
-        if word in text_lower:
-            score += 1
-    for index in range(len(query_words) - 1):
-        phrase = f"{query_words[index]} {query_words[index + 1]}"
-        if phrase in text_lower:
-            score += 3
-    return score
+@lru_cache(maxsize=1)
+def _search_index() -> TranscriptSearchIndex:
+    paragraphs = _load_transcript_paragraphs()
+    corpus = [[token for token in _tokens(paragraph.text) if token not in STOPWORDS] for paragraph in paragraphs]
+    return TranscriptSearchIndex(paragraphs=paragraphs, model=BM25Okapi(corpus))
 
 
-def _score_paragraph(paragraph: TranscriptParagraph, marked_text: str, context: SlideContext) -> int:
-    marked_terms = _expanded_query_terms(marked_text)
-    context_terms = _expanded_query_terms("", context)
-    query_terms = marked_terms | context_terms
-    paragraph_terms = _words(paragraph.text)
-    score = (len(marked_terms & paragraph_terms) * 4) + len(context_terms & paragraph_terms)
-    score += _phrase_score(paragraph.text, marked_text) * 2
-    score += _phrase_score(paragraph.text, _context_text(context))
-    if query_terms and len(query_terms & paragraph_terms) >= 3:
-        score += 3
-    return score
+def _score_paragraph(paragraph: TranscriptParagraph, marked_text: str, context: SlideContext) -> float:
+    search_index = _search_index()
+    scores = search_index.model.get_scores(_bm25_query(marked_text, context))
+    index = search_index.paragraphs.index(paragraph)
+    return float(scores[index])
 
 
 def _build_socratic_answer(marked_text: str, chunks: list[dict[str, str | int]]) -> str:
@@ -181,11 +187,10 @@ def _chunk_payload(paragraphs: list[TranscriptParagraph]) -> list[dict[str, str 
 
 
 def _rank_paragraphs(marked_text: str, context: SlideContext) -> list[TranscriptParagraph]:
-    return sorted(
-        _load_transcript_paragraphs(),
-        key=lambda paragraph: (_score_paragraph(paragraph, marked_text, context), -paragraph.line),
-        reverse=True,
-    )
+    search_index = _search_index()
+    scores = search_index.model.get_scores(_bm25_query(marked_text, context))
+    paired = zip(search_index.paragraphs, scores, strict=True)
+    return [paragraph for paragraph, score in sorted(paired, key=lambda item: (float(item[1]), -item[0].line), reverse=True)]
 
 
 def _select_context_chunks(
@@ -204,18 +209,26 @@ def _select_context_chunks(
     selected: list[TranscriptParagraph] = []
     selected_ids: set[str] = set()
     top = scored[0]
+    for paragraph in scored:
+        if paragraph.paragraph_id in selected_ids:
+            continue
+        selected.append(paragraph)
+        selected_ids.add(paragraph.paragraph_id)
+        if len(selected) >= MAX_CONTEXT_CHUNKS:
+            break
+
     source_paragraphs = [
         paragraph
         for paragraph in _load_transcript_paragraphs()
         if paragraph.source == top.source
     ]
     source_index = source_paragraphs.index(top)
-    for paragraph in source_paragraphs[source_index:source_index + 3]:
-        selected.append(paragraph)
-        selected_ids.add(paragraph.paragraph_id)
-
-    for paragraph in scored:
+    neighbor_indices = range(max(0, source_index - 2), min(len(source_paragraphs), source_index + 3))
+    for index in neighbor_indices:
+        paragraph = source_paragraphs[index]
         if paragraph.paragraph_id in selected_ids:
+            continue
+        if _score_paragraph(paragraph, marked_text, context) < MIN_NEIGHBOR_SCORE:
             continue
         selected.append(paragraph)
         selected_ids.add(paragraph.paragraph_id)
@@ -260,7 +273,7 @@ def get_marked_transcript_context(marked_text: str, context: SlideContext | None
         "marked_text": selected_text,
         "primary_paragraph_id": chunks[0]["paragraph_id"],
         "confidence": min(0.98, 0.55 + (_score_paragraph(matched[0], selected_text, slide_context) / 50)),
-        "retrieval_method": "general_transcript_search",
+        "retrieval_method": "rank_bm25",
         "summary": _build_summary(selected_text, chunks),
         "chunks": chunks,
         "assistant_text": _build_socratic_answer(selected_text, chunks),

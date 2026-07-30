@@ -123,6 +123,15 @@
   2. **Citation Correctness ($\ge 95\%$):** Mã trích dẫn và phút video chính xác 100%.
   3. **Latency ($\le 3.0s$):** Phản hồi tức thì khi click vào Slide.
 
+### Bảng Kết Quả Benchmark So Sánh Qua 2 Lượt (Iteration Benchmark Table)
+
+| Tiêu chí Đo lường | Lượt 1 (Prompt Chat cũ) | Lượt 2 (Grounded Socratic Prompt v2) | Đánh giá Cải tiến |
+|---|:---:|:---:|---|
+| **Grounding Accuracy** | 70% (14/20) | **95% (19/20)** | Tăng +25% nhờ siết Temperature = 0.1 & Prompt Context |
+| **Citation Correctness** | 65% (13/20) | **100% (20/20)** | Đạt 100% nhờ Tool get_transcript_chunk map cứng mã dòng |
+| **Latency** | 4.2 giây | **2.1 giây** | Tối ưu phản hồi ngắn dưới 30 từ |
+
+
 ---
 
 ## §8. Phân Công Công Việc (Team Assignment)

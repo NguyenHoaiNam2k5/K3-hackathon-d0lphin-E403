@@ -50,7 +50,11 @@ def transcript_context_text(context: dict[str, Any]) -> str:
         if isinstance(chunk, dict) and chunk.get('paragraph_id') and chunk.get('text')
     )
 
-def apply_deepseek_summary(context: dict[str, Any], marked_text: str) -> dict[str, Any]:
+def apply_deepseek_summary(
+    context: dict[str, Any],
+    marked_text: str,
+    student_question: str = "",
+) -> dict[str, Any]:
     provider = make_provider('deepseek')
     model = getattr(provider, 'default_model', None)
     source_text = transcript_context_text(context)
@@ -61,8 +65,13 @@ def apply_deepseek_summary(context: dict[str, Any], marked_text: str) -> dict[st
         {
             'role': 'system',
             'content': (
-                'Bạn là VLearn Socratic Tutor. Tóm tắt ngắn gọn bằng tiếng Việt, '
-                'chỉ dựa trên transcript được cung cấp. Không thêm kiến thức ngoài. '
+                'Bạn là VLearn Socratic Tutor. Giải thích phần học viên bôi trên slide '
+                'bằng tiếng Việt dễ hiểu, chỉ dựa trên transcript được cung cấp. '
+                'Không thêm kiến thức ngoài. Nếu transcript không đủ căn cứ, hãy nói rõ. '
+                'Luôn ưu tiên trả lời đúng câu hỏi của học viên, không chỉ giải thích đoạn mark. '
+                'Nếu câu hỏi của học viên hỏi sang nội dung không được đoạn transcript hỗ trợ, '
+                'hãy nói rõ đoạn được chọn không đề cập nội dung đó, không trả lời bằng kiến thức ngoài, '
+                'và không tự suy diễn. '
                 'Luôn trích dẫn mã đoạn như [T06-126].'
             ),
         },
@@ -70,8 +79,16 @@ def apply_deepseek_summary(context: dict[str, Any], marked_text: str) -> dict[st
             'role': 'user',
             'content': (
                 f'Học viên mark trên slide: {marked_text}\n\n'
+                f'Câu hỏi của học viên: {student_question or "Hãy giải thích phần được mark."}\n\n'
                 f'Transcript context:\n{source_text}\n\n'
-                'Trả về 2 câu: câu 1 tóm tắt khái niệm, câu 2 là một câu hỏi Socratic gợi mở.'
+                'Trả về ngắn gọn theo cấu trúc:\n'
+                '1. Ý chính: một câu tóm tắt.\n'
+                '2. Giải thích: 2-4 câu giúp học viên hiểu phần được mark dựa trên transcript.\n'
+                '3. Tự kiểm tra: một câu hỏi Socratic gợi mở.\n'
+                'Nếu câu hỏi không được transcript hỗ trợ, phần Ý chính phải nói rõ '
+                '"đoạn bạn chọn không đề cập..." và phần Giải thích chỉ nêu transcript đang nói gì, '
+                'không trả lời câu hỏi ngoài phạm vi.\n'
+                'Mỗi phần phải có citation khi dùng ý từ transcript.'
             ),
         },
     ]
@@ -83,6 +100,7 @@ def apply_deepseek_summary(context: dict[str, Any], marked_text: str) -> dict[st
 
     summary = dict(context.get('summary', {}))
     summary['short'] = summary_text
+    summary['explanation'] = summary_text
     context['summary'] = summary
     context['assistant_text'] = summary_text
     context['summary_provider'] = 'deepseek'
@@ -200,6 +218,7 @@ def api_chat() -> Any:
 def api_marked_text() -> Any:
     data = request.json or {}
     marked_text = data.get('marked_text', '').strip()
+    student_question = data.get('student_question', '').strip()
     slide_id = data.get('slide_id', 'unknown').strip() or 'unknown'
     slide_context = slide_context_from_request(data, slide_id)
     use_ai_summary = bool_field(data.get('use_ai_summary', True), True)
@@ -212,7 +231,7 @@ def api_marked_text() -> Any:
     context['summary_status'] = 'fallback'
     if use_ai_summary and context.get('status') == 'matched':
         try:
-            context = apply_deepseek_summary(context, marked_text)
+            context = apply_deepseek_summary(context, marked_text, student_question)
         except RuntimeError as exc:
             context['summary_error'] = str(exc)
     return jsonify(context)

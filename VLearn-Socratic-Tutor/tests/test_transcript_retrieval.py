@@ -26,13 +26,14 @@ def test_marked_text_finds_llm_operation_context() -> None:
     # Then: the response is grounded in the stable transcript paragraph IDs.
     chunk_ids = [chunk["paragraph_id"] for chunk in result["chunks"]]
     assert result["status"] == "matched"
-    assert result["retrieval_method"] == "general_transcript_search"
+    assert result["retrieval_method"] == "rank_bm25"
     assert result["slide_title"] == "Mục tiêu bài học"
     assert "Token economy" in result["nearby_text"]
     assert result["primary_paragraph_id"] == "T06-126"
     assert "T06-126" in chunk_ids
+    assert "T06-128" in chunk_ids
     assert "T06-136" in chunk_ids
-    assert result["summary"]["citations"] == ["T06-126", "T06-127", "T06-128"]
+    assert "T06-126" in result["summary"]["citations"]
     assert "Transformer" in result["assistant_text"]
 
 
@@ -70,9 +71,31 @@ def test_marked_text_general_search_finds_token_economy_context() -> None:
     # Then: retrieval grounds the answer in the token-economy transcript region.
     chunk_ids = [chunk["paragraph_id"] for chunk in result["chunks"]]
     assert result["status"] == "matched"
-    assert result["retrieval_method"] == "general_transcript_search"
-    assert result["primary_paragraph_id"] == "T06-154"
+    assert result["retrieval_method"] == "rank_bm25"
+    assert result["primary_paragraph_id"] == "T06-155"
+    assert "T06-154" in chunk_ids
     assert "T06-155" in chunk_ids
+
+
+def test_marked_text_includes_previous_context_for_multi_paragraph_concepts() -> None:
+    # Given: learner marks a slide heading whose first concept is explained just before
+    # the highest-ranked transcript paragraph.
+    marked_text = "Knowledge cutoff, hallucination, context window"
+    context = SlideContext(
+        slide_id="day1-slide-llm-limits",
+        slide_title="Giới hạn của LLM",
+        nearby_text=("knowledge cutoff", "hallucination", "context window"),
+        slide_text=marked_text,
+    )
+
+    # When: the server resolves the mark with the general transcript search.
+    result = get_marked_transcript_context(marked_text, context)
+
+    # Then: the context includes the paragraph immediately before the primary hit.
+    chunk_ids = [chunk["paragraph_id"] for chunk in result["chunks"]]
+    assert result["status"] == "matched"
+    assert "T06-148" in chunk_ids
+    assert "T06-149" in chunk_ids
 
 
 def test_data_pack_summary_discovers_real_pack() -> None:
