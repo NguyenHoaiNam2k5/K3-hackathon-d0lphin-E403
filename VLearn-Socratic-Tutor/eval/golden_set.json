@@ -1,0 +1,50 @@
+{
+  "dataset_id": "vlearn_socratic_tutor_golden_set",
+  "cases": [
+    {
+      "id": "TC01_vector_db_cosine",
+      "phase": "B",
+      "query": "Trỏ vào Slide 04 ô Vector Database",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "get_transcript_chunk",
+            "args": {
+              "hotspot_id": "hs1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "TC02_reranker_cross_encoder",
+      "phase": "B",
+      "query": "Trỏ vào Slide 04 ô Reranker Engine",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "get_transcript_chunk",
+            "args": {
+              "hotspot_id": "hs2"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "TC03_llm_temperature",
+      "phase": "B",
+      "query": "Trỏ vào Slide 04 ô LLM Generator",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "get_transcript_chunk",
+            "args": {
+              "hotspot_id": "hs3"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
