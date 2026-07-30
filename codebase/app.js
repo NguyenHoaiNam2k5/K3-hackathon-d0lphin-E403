@@ -97,5 +97,30 @@ $('#prevSlide').onclick=()=>goSlide(currentSlide-1);$('#nextSlide').onclick=()=>
 $('#contextAll').onclick=()=>{chatAll=!chatAll;$('#contextSlide').textContent=chatAll?'Tất cả slides':`Slide ${currentSlide+1}`;$('#contextAll').textContent=chatAll?'Theo slide':'Đổi'};
 document.querySelectorAll('.scope-card').forEach(b=>b.onclick=()=>{document.querySelectorAll('.scope-card').forEach(x=>x.classList.remove('active'));b.classList.add('active');quiz.scope=b.dataset.scope});document.querySelectorAll('.count-picker button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.count-picker button').forEach(x=>x.classList.remove('active'));b.classList.add('active');quiz.count=Number(b.dataset.count)});
 $('#chatForm').onsubmit=e=>{e.preventDefault();ask($('#chatInput').value)};$('#chatInput').oninput=e=>{e.target.style.height='auto';e.target.style.height=`${Math.min(e.target.scrollHeight,80)}px`;$('#sendChat').disabled=!e.target.value.trim()};$('#chatInput').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask(e.target.value)}};
+
+function moveSelectionToChat(){
+  const selection=window.getSelection();
+  if(!selection||selection.isCollapsed)return;
+  const selectedText=selection.toString().replace(/\s+/g,' ').trim();
+  if(selectedText.length<2)return;
+  const range=selection.getRangeAt(0);
+  const node=range.commonAncestorContainer.nodeType===Node.TEXT_NODE?range.commonAncestorContainer.parentElement:range.commonAncestorContainer;
+  if(!$('#slideCanvas').contains(node))return;
+  const excerpt=selectedText.length>500?`${selectedText.slice(0,500)}…`:selectedText;
+  const input=$('#chatInput');
+  input.value=`“${excerpt}”\n\n`;
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+  if(innerWidth<=1080)$('#chatPanel').classList.add('open');
+  input.focus();
+  input.setSelectionRange(input.value.length,input.value.length);
+  document.querySelector('.selection-toast')?.remove();
+  const toast=document.createElement('div');
+  toast.className='selection-toast';
+  toast.innerHTML='<span>✓</span> Đã thêm đoạn bôi đen vào khung chat';
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(),1800);
+}
+$('#slideCanvas').addEventListener('pointerup',()=>setTimeout(moveSelectionToChat,0));
+
 $('#fullscreen').onclick=()=>{const el=$('.lesson-stage');if(!document.fullscreenElement)el.requestFullscreen?.();else document.exitFullscreen?.()};document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')goSlide(currentSlide-1);if(e.key==='ArrowRight')goSlide(currentSlide+1);if(e.key==='Escape')closeLayers()});
 renderSlide();
