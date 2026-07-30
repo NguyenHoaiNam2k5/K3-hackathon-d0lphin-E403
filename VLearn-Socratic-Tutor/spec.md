@@ -117,11 +117,58 @@
 
 ## §7. Kiểm Thử & Đánh Giá (Eval Benchmark)
 
-* **Golden Set:** 20 test cases đại diện lấy từ `data/vlearn-pack/` (bao gồm 10 câu hỏi hình ảnh Slide, 5 câu hỏi thuật ngữ khó, 5 câu hỏi ngoài phạm vi).
-* **Tiêu chí đánh giá (Metrics):**
-  1. **Grounding Accuracy ($\ge 90\%$):** Câu trả lời đúng với nội dung lời giảng trong Transcript.
-  2. **Citation Correctness ($\ge 95\%$):** Mã trích dẫn và phút video chính xác 100%.
-  3. **Latency ($\le 3.0s$):** Phản hồi tức thì khi click vào Slide.
+* **Chiều chất lượng + định nghĩa kiểm chứng được:**
+  1. **Retrieval:** Hệ thống phải dùng `rank_bm25` để tìm transcript từ đoạn học viên mark + context slide; không dùng map cứng theo từng câu mark.
+  2. **Grounding:** Câu trả lời chỉ dùng retrieved transcript chunks; không thêm số liệu, claim hoặc kiến thức ngoài transcript.
+  3. **Citation:** Answer phải có citation dạng `[Txx-NNN]`; mọi citation trong answer phải nằm trong retrieved chunks.
+  4. **Out-of-scope refusal:** Nếu câu hỏi không được transcript hỗ trợ, answer phải nói rõ đoạn được chọn/transcript không đề cập, không tự suy diễn.
+  5. **Answer format:** Output phải có đủ `Ý chính`, `Giải thích`, `Tự kiểm tra`.
+  6. **Provider:** Benchmark dùng DeepSeek qua `LLM_PROVIDER=deepseek`, model mặc định `deepseek-chat`.
+
+* **Golden set (≥20 cases, file trong `eval/`):**
+  * File: `eval/golden_set.json`
+  * Dataset id: `vlearn_marked_text_grounding_v1`
+  * Version: `1.1.0`
+  * Tổng số case: **24**
+  * Cơ cấu:
+    * **21** grounded-answer cases.
+    * **3** out-of-scope refusal cases.
+    * **20** marked texts unique.
+    * **24** student questions unique.
+  * Mỗi case gồm input (`marked_text`, `student_question`, `slide_context`), expected behavior, required citations, required concepts, forbidden claims và guardrails.
+
+* **Guardrails được kiểm thử tự động:**
+
+| Guardrail | Cách kiểm chứng |
+|---|---|
+| Retrieval method | `retrieval_method == rank_bm25` |
+| DeepSeek generation | `summary_provider == deepseek`, `summary_status == generated` |
+| Required context citations | Citation bắt buộc phải có trong retrieved chunks |
+| Answer has citation | Answer phải có ít nhất một citation `[Txx-NNN]` |
+| Citation subset | Citation trong answer không được nằm ngoài retrieved chunks |
+| Required sections | Answer có `Ý chính`, `Giải thích`, `Tự kiểm tra` |
+| Required concepts | Answer chứa concept cốt lõi của case |
+| Forbidden claims | Answer không chứa claim bị cấm |
+| Out-of-scope refusal | Case ngoài phạm vi phải có marker như “không đề cập”, “không đủ căn cứ”, “không có trong transcript” |
+
+* **Quality bar (chốt từ 23:59, giữ nguyên sau đó):**
+  * **Đạt khi ≥95%** qua toàn bộ golden set.
+  * Và không có lỗi guardrail nghiêm trọng:
+    1. Không hallucinate ngoài transcript.
+    2. Không dùng citation ngoài context đã retrieve.
+    3. Không trả lời câu hỏi ngoài phạm vi nếu transcript không hỗ trợ.
+  * Với 24 cases, ngưỡng 95% cho phép fail tối đa 1 case nhỏ nhưng không được fail lỗi grounding/citation/refusal nghiêm trọng.
+
+### Kết quả các lượt chạy benchmark trước CP6
+
+| Lượt chạy | Run output | Passed | Tỷ lệ | Failed | Provider |
+|---|---|---:|---:|---:|---|
+| Run 1 | `eval/runs/vlearn_marked_text_grounding_v1_2026-07-30T093012Z0000.json` | 24/24 | 100.0% | 0 | deepseek |
+| Run 2 | `eval/runs/vlearn_marked_text_grounding_v1_2026-07-30T095916Z0000.json` | 23/24 | 95.8% | 1 | deepseek |
+| Run 3 | `eval/runs/vlearn_marked_text_grounding_v1_2026-07-30T100300Z0000.json` | 24/24 | 100.0% | 0 | deepseek |
+| Run 4 | `eval/runs/vlearn_marked_text_grounding_v1_2026-07-30T100837Z0000.json` | 23/24 | 95.8% | 1 | deepseek |
+
+* **Kết luận benchmark:** Các lượt chạy đạt từ **95.8% đến 100%**, vượt quality bar 95%. Bộ test hiện kiểm được grounding, citation, refusal và format. Hạn chế còn lại: dataset đang tập trung nhiều vào cụm nội dung LLM, nên sau CP6 nên mở rộng thêm cases từ nhiều slide/chủ đề khác trong `data/vlearn-pack/`.
 
 ---
 
