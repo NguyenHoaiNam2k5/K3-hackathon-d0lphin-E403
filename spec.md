@@ -362,12 +362,13 @@ Các số trên lấy từ benchmark hiện có `vlearn_marked_text_grounding_v1
 
 | Hạng mục                       | Người chịu trách nhiệm | Deliverable                      |
 | ------------------------------ | ---------------------- | -------------------------------- |
-| Spec và quyết định sản phẩm    | `[TODO tên]`           | `spec.md`                        |
-| Evidence khảo sát/mining       | `[TODO tên]`           | log chuẩn A/B + 5 quote          |
-| Code, prompt, retrieval và guardrail | `Trần Anh Văn - 2A202601513`           | prompt/version + trace AI thật   |
-| Golden set và chấm eval        | `[TODO tên]`           | `eval/golden-set.*`, các run     |
-| UI prototype              | `Trần Anh Văn - 2A202601513`           | `codebase/`                      |
-| Validation, demo và slide      | `[TODO tên]`           | `validation/`, `demo-slides.pdf` |
+| Spec và quyết định sản phẩm    | Nguyễn Hoài Nam — 2A202601399 | `spec.md`                        |
+| Evidence khảo sát/mining       | Nguyễn Hoài Nam — 2A202601399 | log chuẩn A/B + 5 quote          |
+| Prompt, retrieval và guardrail | Trần Anh Văn — 2A202601513 | prompt/version + trace AI thật   |
+| Golden set và chấm eval        | Ngô Hoàng Gia Bảo — 2A202601375 | `eval/golden-set.*`, các run     |
+| Code prototype                 | Trần Anh Văn — 2A202601513 | logic trong `codebase/`          |
+| UI prototype                   | Lường Duy Thái — 2A202601021 | giao diện trong `codebase/`      |
+| Validation, demo và slide      | Nguyễn Hoài Nam — 2A202601399 | `validation/`, `demo-slides.pdf` |
 
 > Một người có thể giữ nhiều hạng mục, nhưng mọi hạng mục phải có tên và người đó phải giải thích được phần mình làm.
 
@@ -382,7 +383,7 @@ Ba câu hỏi cố định sau task:
 2. “Kết quả này bạn có tin không — vì sao?”
 3. “Bạn có dùng thật không — vì sao hoặc vì sao chưa?”
 
-**Người ghi log:** `[TODO tên]`.  
+**Người ghi log:** Nguyễn Hoài Nam — 2A202601399.  
 **Artifact:** `validation/feedback-log.md`, gồm tên/vai, willing user hay không, task, quan sát, quote nguyên văn, mức nghiêm trọng.
 
 ### 8.3 Multi-prototype
@@ -421,7 +422,7 @@ Tiêu chí chọn: tỷ lệ hoàn tất quiz không cần trợ giúp, tỷ l�
 4. **Evidence ban đầu:** có 6 transcript sạch, khoảng 700 đoạn làm nguồn; bằng chứng pain khảo sát/mining `TODO-THỰC TẾ`.
 5. **Lát cắt:** Khi một học viên đang xem lại một slide ở nhà muốn tự kiểm tra mức độ hiểu, chatbot quyết định nội dung nào trong transcript đủ căn cứ để tạo một bộ câu hỏi ôn tập có đáp án, giải thích và trích dẫn, giúp học viên biết phần nào cần xem lại.
 6. **Automation:** conditional vì câu hỏi có đáp án sai/mơ hồ có thể củng cố kiến thức sai; case không chắc phải bị loại; ≥3 willing users `TODO-THỰC TẾ`.
-7. **Phân công:** `TODO-THỰC TẾ — điền tên theo §8.1`.
+7. **Phân công:** đã điền tên và mã số sinh viên theo §8.1.
 
 ## Phụ lục B — Prompt contract cho quyết định AI trung tâm
 

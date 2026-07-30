@@ -4,13 +4,20 @@ Prototype trang xem lại slide bài giảng, tích hợp chatbot RAG từ trans
 
 ## Chạy demo
 
-Mở `lessons.html` bằng trình duyệt để bắt đầu từ trang chọn bài học, hoặc chạy một static server tại thư mục `codebase/`:
+Chạy Flask backend trong `../VLearn-Socratic-Tutor` trước:
 
 ```bash
-python -m http.server 8080
+DAY04_ENV_FILE=.env PYTHONIOENCODING=utf-8 python src/app.py
 ```
 
-Sau đó truy cập `http://localhost:8080/lessons.html`.
+Sau đó chạy UI bằng npm trong thư mục `codebase/`:
+
+```bash
+npm install
+npm run dev
+```
+
+Truy cập `http://localhost:3000`. Vite proxy sẽ chuyển `/api/*` sang backend ở `http://localhost:8501`.
 
 ## Luồng có thể demo
 
@@ -20,4 +27,4 @@ Sau đó truy cập `http://localhost:8080/lessons.html`.
 - Chuyển ngữ cảnh chatbot giữa slide hiện tại và toàn bộ bài học.
 - Bấm **Ôn tập**, chọn phạm vi slide hiện tại hoặc toàn bộ 6 slides, rồi làm quiz và xem kết quả.
 
-Đây là UI prototype chạy bằng dữ liệu mô phỏng ở phía client; chưa kết nối LLM, vector database hoặc pipeline RAG thật.
+Đây là UI React/Vite kết nối Flask AI agent qua `/api/chat`, `/api/marked-text`, `/api/quiz`, và `/api/version`.
