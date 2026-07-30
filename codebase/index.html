@@ -1,118 +1,16 @@
 <!doctype html>
 <html lang="vi">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="VLearn Lesson Review - xem lại slide, hỏi đáp RAG và ôn tập cùng AI." />
-  <title>VLearn · Lesson Review</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <header class="app-header">
-    <a class="brand" href="lessons.html" aria-label="VLearn">
-      <span class="brand-mark"><svg viewBox="0 0 28 28"><path d="M7 6.5 14 3l7 3.5v7.8c0 4.4-2.9 8.4-7 10.2-4.1-1.8-7-5.8-7-10.2V6.5Z"/><path d="m10.5 13.8 2.2 2.2 5-5"/></svg></span>
-      <span>VLearn</span>
-    </a>
-    <div class="breadcrumb">
-      <a href="lessons.html">Khoá học AI Product</a><span>/</span><strong>Day 2 · Xác định bài toán AI</strong>
-    </div>
-    <div class="header-actions">
-      <span class="saved"><i></i> Đã lưu tiến độ</span>
-      <button class="header-icon" aria-label="Ghi chú"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg></button>
-      <div class="avatar">MH</div>
-    </div>
-  </header>
-
-  <main class="workspace">
-    <aside class="slide-nav" id="slideNav">
-      <div class="slide-nav-head">
-        <div><strong>Nội dung bài học</strong><span>6 slides · 24 phút</span></div>
-        <button class="mobile-close" id="closeSlides" aria-label="Đóng">×</button>
-      </div>
-      <div class="lesson-progress"><i id="lessonProgress"></i></div>
-      <div class="slide-list" id="slideList"></div>
-      <div class="lesson-complete">
-        <span class="complete-icon">✓</span>
-        <div><strong>Tiến độ bài học</strong><span id="progressText">1/6 slide đã xem</span></div>
-      </div>
-    </aside>
-
-    <section class="lesson-stage">
-      <div class="lesson-toolbar">
-        <button class="toolbar-button mobile-slides" id="openSlides"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>Slides</span></button>
-        <div class="slide-position"><span id="slidePosition">Slide 1 / 6</span><strong id="slideSection">Từ vấn đề đến sản phẩm AI</strong></div>
-        <div class="stage-actions">
-          <button class="toolbar-button" id="openQuiz"><svg viewBox="0 0 24 24"><path d="M9 3h6l1 2h3v16H5V5h3l1-2Z"/><path d="m9 12 2 2 4-4M9 18h6"/></svg><span>Ôn tập</span></button>
-          <button class="toolbar-button" id="fullscreen"><svg viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg></button>
-        </div>
-      </div>
-
-      <div class="slide-area">
-        <div class="slide-canvas" id="slideCanvas"></div>
-        <div class="slide-controls">
-          <button id="prevSlide" aria-label="Slide trước"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
-          <div class="slide-dots" id="slideDots"></div>
-          <button id="nextSlide" aria-label="Slide sau"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
-        </div>
-      </div>
-
-      <div class="slide-footer">
-        <div class="transcript-state"><span class="pulse"></span><span><strong>Transcript đã đồng bộ</strong><small id="transcriptRef">Nguồn: T01-001 → T01-006</small></span></div>
-        <button id="askSlide"><svg viewBox="0 0 24 24"><path d="M20 14a3 3 0 0 1-3 3H8l-4 3V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v7Z"/></svg>Hỏi AI về slide này</button>
-      </div>
-    </section>
-
-    <aside class="chat-panel" id="chatPanel">
-      <div class="chat-head">
-        <div class="ai-title"><span class="ai-mark">✦</span><div><strong>Trợ giảng AI</strong><span><i></i> Đang dùng 6 transcript</span></div></div>
-        <button class="header-icon" id="closeChat" aria-label="Đóng chatbot"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
-      </div>
-      <div class="context-bar"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h6"/></svg><span>Đang hỏi theo <strong id="contextSlide">Slide 1</strong></span><button id="contextAll">Đổi</button></div>
-      <div class="chat-messages" id="chatMessages" aria-live="polite">
-        <div class="ai-message intro-message">
-          <span class="mini-ai">✦</span>
-          <div class="message-content"><p>Chào Minh! Mình đã đọc slide và transcript của bài học này.</p><p>Bạn có thể hỏi mình giải thích, lấy ví dụ hoặc làm rõ bất kỳ nội dung nào đang xuất hiện trên slide.</p></div>
-        </div>
-        <div class="suggested-questions" id="suggestedQuestions"></div>
-      </div>
-      <div class="chat-composer-wrap">
-        <form class="chat-composer" id="chatForm">
-          <textarea id="chatInput" rows="1" placeholder="Hỏi về nội dung slide..." aria-label="Câu hỏi"></textarea>
-          <div class="composer-row"><span><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h6"/></svg> RAG · Transcript bài giảng</span><button id="sendChat" disabled aria-label="Gửi"><svg viewBox="0 0 24 24"><path d="m5 12 14-7-4 14-3-6-7-1Z"/><path d="m12 13 7-8"/></svg></button></div>
-        </form>
-        <p>AI có thể mắc lỗi · Kiểm tra lại từ trích dẫn</p>
-      </div>
-    </aside>
-  </main>
-
-  <button class="chat-fab" id="chatFab" aria-label="Mở trợ giảng AI"><span>✦</span> Hỏi AI</button>
-  <div class="backdrop" id="backdrop"></div>
-
-  <aside class="source-drawer" id="sourceDrawer" aria-hidden="true">
-    <div class="drawer-head"><div><span>Đoạn transcript nguồn</span><strong id="sourceTitle"></strong></div><button id="closeSource">×</button></div>
-    <div class="drawer-body"><div class="source-meta"><span id="sourceId"></span><span>Khớp ngữ nghĩa <strong id="matchScore">94%</strong></span></div><p id="sourceText"></p><div class="verified"><span>✓</span>Nội dung đã được đối chiếu với transcript bài giảng.</div></div>
-  </aside>
-
-  <section class="quiz-modal" id="quizModal" aria-hidden="true">
-    <div class="modal-head"><div><span class="modal-icon"><svg viewBox="0 0 24 24"><path d="M9 3h6l1 2h3v16H5V5h3l1-2Z"/><path d="m9 12 2 2 4-4M9 18h6"/></svg></span><span><strong>Ôn tập cùng AI</strong><small>Tạo câu hỏi từ transcript bài giảng</small></span></div><button id="closeQuiz">×</button></div>
-    <div class="quiz-setup" id="quizSetup">
-      <div class="quiz-hero"><span>✦</span><h2>Bạn muốn ôn tập phần nào?</h2><p>AI sẽ tạo câu hỏi từ transcript và giải thích đáp án bằng nguồn tương ứng.</p></div>
-      <div class="scope-options">
-        <button class="scope-card active" data-scope="slide"><span class="scope-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H4zM9 21h6M12 17v4"/></svg></span><span><strong>Slide hiện tại</strong><small id="currentSlideScope">Slide 1 · Từ vấn đề đến sản phẩm AI</small></span><span class="radio"></span></button>
-        <button class="scope-card" data-scope="all"><span class="scope-icon all"><svg viewBox="0 0 24 24"><path d="M6 3h12v14H6z"/><path d="M3 7v14h12M9 7h6M9 11h6"/></svg></span><span><strong>Toàn bộ bài học</strong><small>Tổng hợp nội dung từ tất cả 6 slides</small></span><span class="radio"></span></button>
-      </div>
-      <div class="quiz-config"><span><strong>Số lượng câu hỏi</strong><small>Ước tính 2–4 phút</small></span><div class="count-picker"><button data-count="3" class="active">3</button><button data-count="5">5</button></div></div>
-      <button class="generate-button" id="generateQuiz"><span>✦</span> Tạo câu hỏi ôn tập</button>
-    </div>
-    <div class="quiz-play" id="quizPlay" hidden>
-      <div class="quiz-status"><span id="quizPosition">Câu 1 / 3</span><span id="quizScore">0 điểm</span></div><div class="quiz-progress"><i id="quizProgress"></i></div>
-      <span class="question-label" id="questionLabel">SLIDE 1 · CHỌN MỘT ĐÁP ÁN</span><h2 id="quizQuestion"></h2><div class="quiz-options" id="quizOptions"></div><div class="quiz-explanation" id="quizExplanation" hidden></div><button class="next-question" id="nextQuestion" disabled>Kiểm tra đáp án</button>
-    </div>
-    <div class="quiz-result" id="quizResult" hidden>
-      <div class="score-ring"><span id="finalScore">0/3</span></div><span class="result-label">HOÀN THÀNH LƯỢT ÔN TẬP</span><h2 id="resultTitle"></h2><p id="resultMessage"></p><div class="result-grid"><div><strong id="correctAnswers">0</strong><span>Trả lời đúng</span></div><div><strong id="accuracy">0%</strong><span>Độ chính xác</span></div></div><div class="result-actions"><button id="retryQuiz">Làm lại</button><button id="finishQuiz">Hoàn tất</button></div>
-    </div>
-  </section>
-
-  <script src="app.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="VLearn Lesson Review - xem lại slide, hỏi đáp RAG và ôn tập cùng AI." />
+    <title>VLearn · Lesson Review & Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>

@@ -5,13 +5,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, request
 
 from chat_runtime.loop import run_model_tool_loop
 from core.data_pack import data_pack_summary
 from core.env_loader import load_lab_env
 from providers import configured_provider_name, make_provider
 from services.marked_text_service import apply_llm_summary
+from services.quiz_service import QuizGenerationRequest, generate_quiz_from_transcript
 from tools import (
     SlideContext,
     get_marked_transcript_context,
@@ -25,7 +26,7 @@ ARTIFACTS_DIR = ROOT / 'artifacts'
 
 load_lab_env(ROOT)
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
+app = Flask(__name__, static_folder=None)
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +60,30 @@ def parse_text_field(value: Any, default: str = "") -> str:
     return str(value).strip()
 
 
+def parse_int_field(value: Any, default: int) -> int:
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        try:
+            return int(value.strip())
+        except ValueError:
+            return default
+    return default
+
+
+def parse_quiz_request(data: dict[str, Any]) -> QuizGenerationRequest:
+    scope = parse_text_field(data.get('scope'), 'slide')
+    requested_count = max(1, min(5, parse_int_field(data.get('requested_count'), 3)))
+    return QuizGenerationRequest(
+        scope='all' if scope == 'all' else 'slide',
+        requested_count=requested_count,
+        slide_id=parse_text_field(data.get('slide_id'), 'unknown') or 'unknown',
+        slide_title=parse_text_field(data.get('slide_title')),
+        slide_text=parse_text_field(data.get('slide_text')),
+        nearby_text=parse_text_sequence(data.get('nearby_text', [])),
+    )
+
+
 def slide_context_from_request(data: dict[str, Any], slide_id: str) -> SlideContext:
     return SlideContext(
         slide_id=slide_id,
@@ -82,11 +107,6 @@ def get_agent_config(version_label: str = 'v3') -> AgentConfig:
         openai_tools=to_openai_tools(tool_declarations),
         artifact_version=artifact_ver,
     )
-
-
-@app.route('/')
-def index() -> str:
-    return render_template('index.html')
 
 
 @app.route('/api/version', methods=['GET'])
@@ -201,6 +221,22 @@ def api_marked_text() -> Any:
         except RuntimeError as exc:
             context['summary_error'] = str(exc)
     return jsonify(context)
+
+
+@app.route('/api/quiz', methods=['POST'])
+def api_quiz() -> Any:
+    data = request.json or {}
+    quiz_request = parse_quiz_request(data)
+    if not quiz_request.retrieval_query:
+        return jsonify({'error': 'Empty quiz context'}), 400
+
+    provider_name = configured_provider_name(data.get('provider'))
+    provider = make_provider(provider_name)
+    try:
+        result = generate_quiz_from_transcript(quiz_request, provider, provider_name)
+    except RuntimeError as exc:
+        return jsonify({'status': 'error', 'error': str(exc)}), 500
+    return jsonify(result.to_payload())
 
 
 if __name__ == '__main__':

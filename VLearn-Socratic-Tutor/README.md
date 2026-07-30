@@ -1,5 +1,9 @@
 # Day 04 Lab v2 — Research Agent Tool Eval
 
+## Current run surface
+
+`VLearn-Socratic-Tutor/` is API-only. Run the Flask agent backend on `http://localhost:8501`, then run the React/Vite UI from `../codebase` with npm on `http://localhost:3000`.
+
 ## Brief
 
 Trong lab này, nhóm build một research agent nhỏ nhưng chạy thật. Agent nhận request của user, chọn tool, truyền arguments, chạy tool thật, lưu full JSON log, rồi dùng log đó để tối ưu prompt/tool declaration qua nhiều version.
