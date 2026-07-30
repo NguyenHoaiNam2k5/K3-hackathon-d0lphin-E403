@@ -348,7 +348,7 @@
           "T06-139"
         ],
         "must_include": [
-          "không đúng 100%",
+          "có thể trả lời sai",
           "bias",
           "fine-tuning/reinforcement learning",
           "hallucination"
@@ -364,7 +364,7 @@
           "T06-139"
         ],
         "required_concepts_in_answer": [
-          "không đúng 100%",
+          "có thể trả lời sai",
           "bias",
           "fine-tuning/reinforcement learning",
           "hallucination"

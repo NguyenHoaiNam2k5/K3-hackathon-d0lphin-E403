@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from providers.base import Provider, ToolCall
-from tools import TOOL_FUNCTIONS
+from tools import execute_tool_call
 
 
 @dataclass
@@ -37,15 +37,7 @@ class ResearchAgent:
             temperature=0.0,
             tool_choice=tool_choice,
         )
-        results: list[dict[str, Any]] = []
+        tool_results: list[dict[str, Any]] = []
         for call in response.tool_calls:
-            func = TOOL_FUNCTIONS.get(call.name)
-            if not func:
-                results.append({"tool": call.name, "error": "unknown_tool"})
-                continue
-            try:
-                result = func(**call.args)
-            except Exception as exc:  # keep eval robust; failures are evidence
-                result = {"error": type(exc).__name__, "message": str(exc)}
-            results.append({"tool": call.name, "args": call.args, "result": result})
-        return AgentRun(text=response.text, tool_calls=response.tool_calls, tool_results=results)
+            tool_results.append(execute_tool_call(call))
+        return AgentRun(text=response.text, tool_calls=response.tool_calls, tool_results=tool_results)

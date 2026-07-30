@@ -9,8 +9,8 @@ from typing import Any
 
 from env_loader import load_lab_env
 from providers import make_provider
-from providers.base import ToolCall
-from tools import TOOL_FUNCTIONS, load_tool_declarations, to_openai_tools
+from providers.base import Provider, ToolCall
+from tools import execute_tool_call, load_tool_declarations, to_openai_tools
 from versioning import artifact_version_dict, build_artifact_version
 
 
@@ -41,21 +41,6 @@ def trim_history(history: list[dict[str, str]], window: int) -> list[dict[str, s
     return history[-window * 2:]
 
 
-def execute_tool_call(call: ToolCall) -> dict[str, Any]:
-    func = TOOL_FUNCTIONS.get(call.name)
-    if not func:
-        return {
-            "tool": call.name,
-            "args": call.args,
-            "result": {"error": "unknown_tool", "message": f"No local implementation for {call.name}"},
-        }
-    try:
-        result = func(**call.args)
-    except Exception as exc:
-        result = {"error": type(exc).__name__, "message": str(exc)}
-    return {"tool": call.name, "args": call.args, "result": result}
-
-
 def tool_results_message(events: list[dict[str, Any]]) -> dict[str, str]:
     return {
         "role": "user",
@@ -79,7 +64,7 @@ def assistant_tool_message(response_text: str | None, calls: list[ToolCall]) -> 
 
 def run_model_tool_loop(
     *,
-    provider: Any,
+    provider: Provider,
     messages: list[dict[str, str]],
     tools: list[dict[str, Any]],
     model: str | None,
@@ -109,12 +94,12 @@ def run_model_tool_loop(
             }
 
         working_messages.append(assistant_tool_message(response.text, calls))
-        non_clarification_events: list[dict[str, Any]] = []
+        completed_tool_events: list[dict[str, Any]] = []
 
         for call in calls:
             try:
                 print(f"[TOOL] {call.name}({json.dumps(call.args, ensure_ascii=True, sort_keys=True)})")
-            except Exception:
+            except TypeError:
                 pass
             event = execute_tool_call(call)
             round_record["tool_results"].append(event)
@@ -133,10 +118,10 @@ def run_model_tool_loop(
                     "tool_events": all_tool_events,
                 }
 
-            non_clarification_events.append(event)
+            completed_tool_events.append(event)
 
         rounds.append(round_record)
-        working_messages.append(tool_results_message(non_clarification_events))
+        working_messages.append(tool_results_message(completed_tool_events))
 
     return {
         "status": "max_tool_rounds",

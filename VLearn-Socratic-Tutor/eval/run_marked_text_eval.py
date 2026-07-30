@@ -12,9 +12,7 @@
 from __future__ import annotations
 
 import json
-import re
 import sys
-import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -22,40 +20,16 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC_DIR = ROOT / "src"
 sys.path.insert(0, str(SRC_DIR))
 
-from app import apply_deepseek_summary  # noqa: E402
+from env_loader import load_lab_env  # noqa: E402
+from guardrails import grade_guardrails  # noqa: E402
+from providers import configured_provider_name  # noqa: E402
+from services.marked_text_service import apply_llm_summary  # noqa: E402
 from tools import SlideContext, get_marked_transcript_context  # noqa: E402
 
 DATASET_PATH = ROOT / "eval" / "golden_set.json"
 RUNS_DIR = ROOT / "eval" / "runs"
-CITATION_RE = re.compile(r"\[T\d{2}-\d{3}\]")
-TEXT_TOKEN_RE = re.compile(r"[\wÀ-ỹ]+", re.UNICODE)
-GUARDRAIL_STOPWORDS = {
-    "anh",
-    "ban",
-    "bạn",
-    "cac",
-    "các",
-    "cho",
-    "cua",
-    "của",
-    "duoc",
-    "được",
-    "la",
-    "là",
-    "mot",
-    "một",
-    "nhu",
-    "như",
-    "the",
-    "thế",
-    "thi",
-    "thì",
-    "trong",
-    "va",
-    "và",
-    "voi",
-    "với",
-}
+load_lab_env(SRC_DIR)
+PROVIDER_NAME = configured_provider_name()
 
 
 def text_list(value):
@@ -74,129 +48,6 @@ def chunk_id(chunk):
     return None
 
 
-def normalized(text):
-    decomposed = unicodedata.normalize("NFD", str(text).casefold())
-    return "".join(char for char in decomposed if unicodedata.category(char) != "Mn").replace("đ", "d")
-
-
-def meaningful_tokens(text):
-    tokens = TEXT_TOKEN_RE.findall(normalized(text).replace("/", " "))
-    return [token for token in tokens if len(token) > 1 and token not in GUARDRAIL_STOPWORDS]
-
-
-def concept_is_present(answer_text, concept):
-    answer_tokens = set(meaningful_tokens(answer_text))
-    concept_tokens = meaningful_tokens(concept)
-    if not concept_tokens:
-        return True
-    matches = sum(1 for token in concept_tokens if token in answer_tokens)
-    needed = 1 if "/" in concept else max(1, round(len(concept_tokens) * 0.6))
-    return matches >= needed
-
-
-def forbidden_claim_is_present(answer_text, claim):
-    return normalized(claim) in normalized(answer_text)
-
-
-def guardrail_result(name, passed, expected, observed):
-    return {
-        "name": name,
-        "passed": passed,
-        "expected": expected,
-        "observed": observed,
-    }
-
-
-def grade_guardrails(case, retrieval_result, chunk_ids):
-    guardrails = case["guardrails"]
-    answer_text = retrieval_result.get("assistant_text") or ""
-    answer_citations = CITATION_RE.findall(answer_text)
-    required_context_citations = guardrails["required_citations_in_context"]
-    missing_context = [citation for citation in required_context_citations if citation not in chunk_ids]
-    missing_sections = [
-        section for section in guardrails["must_include_answer_sections"]
-        if normalized(section) not in normalized(answer_text)
-    ]
-    missing_concepts = [
-        concept for concept in guardrails["required_concepts_in_answer"]
-        if not concept_is_present(answer_text, concept)
-    ]
-    forbidden_claims = [
-        claim for claim in guardrails["forbidden_claims_in_answer"]
-        if forbidden_claim_is_present(answer_text, claim)
-    ]
-    outside_citations = [citation for citation in answer_citations if citation.strip("[]") not in chunk_ids]
-    refusal_markers = guardrails.get("refusal_markers", [])
-    refusal_present = any(normalized(marker) in normalized(answer_text) for marker in refusal_markers)
-    checks = [
-        guardrail_result(
-            "retrieval_method",
-            retrieval_result.get("retrieval_method") == "rank_bm25",
-            "rank_bm25",
-            retrieval_result.get("retrieval_method"),
-        ),
-        guardrail_result(
-            "deepseek_generation",
-            retrieval_result.get("summary_provider") == "deepseek"
-            and retrieval_result.get("summary_status") == "generated",
-            {"summary_provider": "deepseek", "summary_status": "generated"},
-            {
-                "summary_provider": retrieval_result.get("summary_provider"),
-                "summary_status": retrieval_result.get("summary_status"),
-            },
-        ),
-        guardrail_result(
-            "required_citations_in_context",
-            not missing_context,
-            required_context_citations,
-            {"returned": chunk_ids, "missing": missing_context},
-        ),
-        guardrail_result(
-            "answer_has_citation",
-            bool(answer_citations),
-            "at least one [Txx-xxx] citation",
-            answer_citations,
-        ),
-        guardrail_result(
-            "answer_citations_subset_of_context",
-            not outside_citations,
-            "all answer citations must be retrieved chunks",
-            {"answer_citations": answer_citations, "outside_citations": outside_citations},
-        ),
-        guardrail_result(
-            "required_answer_sections",
-            not missing_sections,
-            guardrails["must_include_answer_sections"],
-            {"missing": missing_sections},
-        ),
-        guardrail_result(
-            "required_concepts_in_answer",
-            not missing_concepts,
-            guardrails["required_concepts_in_answer"],
-            {"missing": missing_concepts},
-        ),
-        guardrail_result(
-            "forbidden_claims_absent",
-            not forbidden_claims,
-            guardrails["forbidden_claims_in_answer"],
-            {"found": forbidden_claims},
-        ),
-    ]
-    if guardrails["must_refuse_out_of_scope"]:
-        checks.append(
-            guardrail_result(
-                "out_of_scope_refusal",
-                refusal_present,
-                refusal_markers,
-                answer_text,
-            )
-        )
-    return {
-        "passed": all(check["passed"] for check in checks),
-        "checks": checks,
-    }
-
-
 def slide_context(case):
     slide = case["input"].get("slide_context") or {}
     return SlideContext(
@@ -209,10 +60,11 @@ def slide_context(case):
 
 def evaluate_case(case):
     result = get_marked_transcript_context(case["input"]["marked_text"], slide_context(case))
-    result = apply_deepseek_summary(
+    result = apply_llm_summary(
         result,
         case["input"]["marked_text"],
         case["input"].get("student_question") or "",
+        PROVIDER_NAME,
     )
     chunk_ids = [cid for cid in (chunk_id(chunk) for chunk in result.get("chunks", [])) if cid]
     guardrail_grade = grade_guardrails(case, result, chunk_ids)
@@ -253,7 +105,7 @@ def main() -> int:
         "passed": passed,
         "failed": len(case_results) - passed,
         "retrieval_method": "rank_bm25",
-        "summary_provider": "deepseek",
+        "summary_provider": PROVIDER_NAME,
         "results": case_results,
     }
     RUNS_DIR.mkdir(parents=True, exist_ok=True)
