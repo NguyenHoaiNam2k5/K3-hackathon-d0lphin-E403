@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from typing import Final
 
-from data_pack import TRANSCRIPT_DIR
+from core.data_pack import TRANSCRIPT_DIR
 
 PARAGRAPH_RE: Final = re.compile(r"^\*\*\[(T\d{2}-\d{3})\]\*\*\s+(.*)$")
 

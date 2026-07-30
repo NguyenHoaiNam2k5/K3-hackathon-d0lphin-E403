@@ -7,9 +7,9 @@ from typing import Any
 
 from flask import Flask, jsonify, render_template, request
 
-from chat import run_model_tool_loop
-from data_pack import data_pack_summary
-from env_loader import load_lab_env
+from chat_runtime.loop import run_model_tool_loop
+from core.data_pack import data_pack_summary
+from core.env_loader import load_lab_env
 from providers import configured_provider_name, make_provider
 from services.marked_text_service import apply_llm_summary
 from tools import (
@@ -18,7 +18,7 @@ from tools import (
     load_tool_declarations,
     to_openai_tools,
 )
-from versioning import ArtifactVersion, artifact_version_dict, build_artifact_version
+from core.versioning import ArtifactVersion, artifact_version_dict, build_artifact_version
 
 ROOT = Path(__file__).parent
 ARTIFACTS_DIR = ROOT / 'artifacts'

@@ -46,7 +46,7 @@ UI tốt không chỉ cần "có chat". Mỗi demo nên nhìn được:
 - transcript/run/artifact_version để biết đang xem version nào;
 - cùng một scenario demo được chạy qua nhiều prompt/tool version để thấy cải thiện rõ ràng.
 
-Nếu chọn Streamlit, cài và ghi `streamlit>=1.30.0` vào `requirements.txt`. Tạo `app.py` tái sử dụng `run_model_tool_loop` trong `chat.py`, hiển thị `rounds/tool_events`, và lưu transcript thay vì viết một agent loop khác. Chạy `streamlit run app.py`; PASS khi mở được `http://localhost:8501`. Framework khác dùng contract tương đương và entrypoint của nhóm.
+Nếu chọn Streamlit, cài và ghi `streamlit>=1.30.0` vào `requirements.txt`. Tạo `app.py` tái sử dụng `run_model_tool_loop` trong `chat_runtime/loop.py`, hiển thị `rounds/tool_events`, và lưu transcript thay vì viết một agent loop khác. Chạy `streamlit run app.py`; PASS khi mở được `http://localhost:8501`. Framework khác dùng contract tương đương và entrypoint của nhóm.
 
 ## Deploy để team khác test
 
@@ -146,7 +146,7 @@ Run the fixed base eval as `v0`:
 Lưu ý: eval thực thi tool thật. Case Telegram trong base chỉ chấm `clarify(response_type="yes_no")`; để Telegram credentials unset trong mọi `run_eval`.
 
 ```bash
-python run_eval.py --provider openrouter --version v0 --suite base --eval-cases data/eval_base.json
+python -m eval_runner.agent_eval --provider openrouter --version v0 --suite base --eval-cases data/eval_base.json
 ```
 
 Đọc các trường chính trong run JSON:
@@ -197,9 +197,9 @@ Method, not memorized answers:
 Không chạy cả ba lệnh liên tiếp. Trước mỗi version, sửa một hypothesis rồi mới chạy đúng một lệnh:
 
 ```bash
-python run_eval.py --provider openrouter --version v1 --suite base --eval-cases data/eval_base.json
-python run_eval.py --provider openrouter --version v2 --suite base --eval-cases data/eval_base.json
-python run_eval.py --provider openrouter --version v3 --suite base --eval-cases data/eval_base.json
+python -m eval_runner.agent_eval --provider openrouter --version v1 --suite base --eval-cases data/eval_base.json
+python -m eval_runner.agent_eval --provider openrouter --version v2 --suite base --eval-cases data/eval_base.json
+python -m eval_runner.agent_eval --provider openrouter --version v3 --suite base --eval-cases data/eval_base.json
 ```
 
 Sau mỗi run, fill `artifacts/version_log.csv`:
@@ -231,23 +231,23 @@ Cả template trong `starter_v0/` và `solution/` đều trống; điều đó k
 Run:
 
 ```bash
-python run_eval.py --provider openrouter --version v3 --suite group --eval-cases data/eval_group.json
+python -m eval_runner.agent_eval --provider openrouter --version v3 --suite group --eval-cases data/eval_group.json
 ```
 
 Optional extension eval — không phải điều kiện hoàn thành core; chỉ chạy khi team chọn dùng các capability built-in này:
 
 ```bash
-python run_eval.py --provider openrouter --version v3 --suite extension --eval-cases data/eval_research_extension.json
+python -m eval_runner.agent_eval --provider openrouter --version v3 --suite extension --eval-cases data/eval_research_extension.json
 ```
 
 Nếu đã bỏ optional declarations để isolate core, bật lại chúng trước khi chạy extension.
 
 ## Step 5 — Chat live
 
-`chat.py` là cho tương tác multi-round thật. Nó log mỗi turn vào `transcripts/*.transcript.json`.
+`chat_runtime/loop.py` là cho tương tác multi-round thật. Nó log mỗi turn vào `transcripts/*.transcript.json`.
 
 ```bash
-python chat.py --provider openrouter --version v3
+python -m chat_runtime.loop --provider openrouter --version v3
 ```
 
 Thử ít nhất 3 live turn: một request research bình thường; một request thiếu thông tin rồi bổ sung ở lượt sau; và một request có hành động nhạy cảm để kiểm tra boundary hỏi lại/xác nhận.

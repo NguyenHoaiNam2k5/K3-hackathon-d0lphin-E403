@@ -6,7 +6,7 @@ import sys
 SRC_DIR = Path(__file__).resolve().parents[1] / "src"
 sys.path.insert(0, str(SRC_DIR))
 
-from data_pack import data_pack_summary
+from core.data_pack import data_pack_summary
 from tools import SlideContext, get_marked_transcript_context, get_transcript_chunk
 
 

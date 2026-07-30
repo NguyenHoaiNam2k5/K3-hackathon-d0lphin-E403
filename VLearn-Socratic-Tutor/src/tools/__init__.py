@@ -5,7 +5,7 @@ from typing import Any, Final
 
 import yaml
 
-from data_pack import chatlog_stats
+from core.data_pack import chatlog_stats
 from providers.base import ToolCall
 from tools.transcript_retrieval import SlideContext, get_marked_transcript_context
 

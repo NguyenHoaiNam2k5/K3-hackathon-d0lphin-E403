@@ -17,10 +17,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+EVAL_DIR = Path(__file__).resolve().parent
 SRC_DIR = ROOT / "src"
+sys.path.insert(0, str(EVAL_DIR))
 sys.path.insert(0, str(SRC_DIR))
 
-from env_loader import load_lab_env  # noqa: E402
+from core.env_loader import load_lab_env  # noqa: E402
 from guardrails import grade_guardrails  # noqa: E402
 from providers import configured_provider_name  # noqa: E402
 from services.marked_text_service import apply_llm_summary  # noqa: E402

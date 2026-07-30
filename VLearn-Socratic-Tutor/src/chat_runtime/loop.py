@@ -7,14 +7,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from env_loader import load_lab_env
+from core.env_loader import load_lab_env
+from core.versioning import artifact_version_dict, build_artifact_version
 from providers import make_provider
 from providers.base import Provider, ToolCall
 from tools import execute_tool_call, load_tool_declarations, to_openai_tools
-from versioning import artifact_version_dict, build_artifact_version
 
 
-ROOT = Path(__file__).parent
+ROOT = Path(__file__).resolve().parents[1]
 ARTIFACTS_DIR = ROOT / "artifacts"
 load_lab_env(ROOT)
 

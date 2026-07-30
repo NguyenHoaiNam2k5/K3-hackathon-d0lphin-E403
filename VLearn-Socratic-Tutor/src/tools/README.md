@@ -8,8 +8,9 @@ tools/<tool_name>/
   tool.py   # self-contained implementation
 ```
 
-`tools/__init__.py` is the registry. `agent.py`, `chat.py`, and `run_eval.py`
-import `TOOL_FUNCTIONS` from that registry.
+`tools/__init__.py` is the registry. `chat_runtime/agent.py`,
+`chat_runtime/loop.py`, and `eval_runner/agent_eval.py` import
+`TOOL_FUNCTIONS` from that registry.
 
 ## Frontmatter Fields
 
