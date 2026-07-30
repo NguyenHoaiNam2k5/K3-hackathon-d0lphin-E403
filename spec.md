@@ -364,9 +364,9 @@ Các số trên lấy từ benchmark hiện có `vlearn_marked_text_grounding_v1
 | ------------------------------ | ---------------------- | -------------------------------- |
 | Spec và quyết định sản phẩm    | `[TODO tên]`           | `spec.md`                        |
 | Evidence khảo sát/mining       | `[TODO tên]`           | log chuẩn A/B + 5 quote          |
-| Prompt, retrieval và guardrail | `[TODO tên]`           | prompt/version + trace AI thật   |
+| Code, prompt, retrieval và guardrail | `Trần Anh Văn - 2A202601513`           | prompt/version + trace AI thật   |
 | Golden set và chấm eval        | `[TODO tên]`           | `eval/golden-set.*`, các run     |
-| Code/UI prototype              | `[TODO tên]`           | `codebase/`                      |
+| UI prototype              | `Trần Anh Văn - 2A202601513`           | `codebase/`                      |
 | Validation, demo và slide      | `[TODO tên]`           | `validation/`, `demo-slides.pdf` |
 
 > Một người có thể giữ nhiều hạng mục, nhưng mọi hạng mục phải có tên và người đó phải giải thích được phần mình làm.
