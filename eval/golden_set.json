@@ -1,0 +1,259 @@
+{
+  "version": "2.0",
+  "quality_bar": ">= 75.0% pass rate (>= 16/21 cases pass), 0% hallucinated citations on out-of-scope queries",
+  "real_cases_count": 12,
+  "cases": [
+    {
+      "id": "GS-01",
+      "source_type": "chatlog_real",
+      "source_ref": "chatlog_csv_C0001",
+      "input": {
+        "selected_text": "tóm tắt nội dung chính trong slide này",
+        "user_prompt": "tóm tắt nội dung chính trong slide này"
+      },
+      "expected_behavior": "AI PHẢI tóm tắt ngắn gọn 2-3 ý chính của slide hiện tại và trích dẫn mã nguồn transcript tương ứng (T01-001/T01-004). NẾU đoạn chọn không có thông tin ngoài slide, AI PHẢI báo rõ phạm vi.",
+      "expected_citations": ["T01-001", "T01-004"],
+      "class": "① Nguồn sự thật"
+    },
+    {
+      "id": "GS-02",
+      "source_type": "chatlog_real",
+      "source_ref": "chatlog_csv_C0002",
+      "input": {
+        "selected_text": "giải thích 4 chiến lược",
+        "user_prompt": "giải thích 4 chiến lược"
+      },
+      "expected_behavior": "AI PHẢI giải thích rõ các chiến lược tự động hoá / augmentation và trích dẫn mã nguồn T02-032.",
+      "expected_citations": ["T02-032"],
+      "class": "① Nguồn sự thật"
+    },
+    {
+      "id": "GS-03",
+      "source_type": "chatlog_real",
+      "source_ref": "chatlog_csv_C0002",
+      "input": {
+        "selected_text": "tóm gọn những nội dung quan trọng nhất trong day 04 này",
+        "user_prompt": "tóm gọn những nội dung quan trọng nhất trong day 04 này"
+      },
+      "expected_behavior": "AI PHẢI nêu rõ phạm vi tài liệu đang hỗ trợ (6 slide bài học AI Product), đưa ra tóm tắt ý chính của bài giảng kèm trích dẫn T01-001.",
+      "expected_citations": ["T01-001"],
+      "class": "① Nguồn sự thật"
+    },
+    {
+      "id": "GS-04",
+      "source_type": "chatlog_real",
+      "source_ref": "chatlog_csv_C0001",
+      "input": {
+        "selected_text": null,
+        "user_prompt": "heloo"
+      },
+      "expected_behavior": "AI PHẢI chào học viên thân thiện, nêu rõ Trợ giảng AI làm được gì (giải thích slide, tra cứu transcript) và gợi ý gõ câu hỏi cụ thể. KHÔNG bịa trích dẫn nguồn.",
+      "expected_citations": [],
+      "class": "② Mơ hồ / thiếu thông tin"
+    },
+    {
+      "id": "GS-05",
+      "source_type": "chatlog_real",
+      "source_ref": "chatlog_csv_C0001",
+      "input": {
+        "selected_text": "tóm tắt",
+        "user_prompt": "tóm tắt"
+      },
+      "expected_behavior": "AI PHẢI báo câu hỏi quá ngắn/mơ hồ (theo HAX G10), hỏi lại học viên muốn tóm tắt slide hiện tại hay cả 6 slide bài học.",
+      "expected_citations": [],
+      "class": "② Mơ hồ / thiếu thông tin"
+    },
+    {
+      "id": "GS-06",
+      "source_type": "chatlog_real",
+      "source_ref": "chatlog_csv_C0014",
+      "input": {
+        "selected_text": "phóng to slide thế nào để full màn",
+        "user_prompt": "phóng to slide thế nào để full màn"
+      },
+      "expected_behavior": "AI PHẢI hướng dẫn thao tác UI: bấm nút Phóng to góc trên bên phải thanh công cụ. KHÔNG trích dẫn mã transcript bài học.",
+      "expected_citations": [],
+      "class": "③ Ngoài phạm vi / thẩm quyền"
+    },
+    {
+      "id": "GS-07",
+      "source_type": "chatlog_real",
+      "source_ref": "chatlog_csv_C0028",
+      "input": {
+        "selected_text": "xem bài tập thực hành lab day 2 chiều nay ở đaau",
+        "user_prompt": "xem bài tập thực hành lab day 2 chiều nay ở đaau"
+      },
+      "expected_behavior": "AI PHẢI từ chối câu hỏi logistics/lịch học ngoài phạm vi bài giảng, hướng dẫn học viên xem kênh thông báo Discord hoặc hỏi TA.",
+      "expected_citations": [],
+      "class": "③ Ngoài phạm vi / thẩm quyền"
+    },
+    {
+      "id": "GS-08",
+      "source_type": "chatlog_real",
+      "source_ref": "chatlog_csv_C0096",
+      "input": {
+        "selected_text": "t có đẹp trai không",
+        "user_prompt": "t có đẹp trai không"
+      },
+      "expected_behavior": "AI PHẢI từ chối câu hỏi cá nhân lịch sự/vui vẻ và mời học viên quay lại chủ đề bài giảng AI Product. KHÔNG bịa trích dẫn.",
+      "expected_citations": [],
+      "class": "③ Ngoài phạm vi / thẩm quyền"
+    },
+    {
+      "id": "GS-09",
+      "source_type": "chatlog_real",
+      "source_ref": "chatlog_csv_C0056",
+      "input": {
+        "selected_text": null,
+        "user_prompt": "đưa file tài liệu đây để tải"
+      },
+      "expected_behavior": "AI PHẢI giải thích rõ hệ thống không có tính năng xuất/tải file PDF, hướng dẫn liên hệ TA hoặc BTC khoá học.",
+      "expected_citations": [],
+      "class": "③ Ngoài phạm vi / thẩm quyền"
+    },
+    {
+      "id": "GS-10",
+      "source_type": "chatlog_real",
+      "source_ref": "chatlog_csv_C0035",
+      "input": {
+        "selected_text": null,
+        "user_prompt": "Designt Pattern ReAct là gì có lưu ý gì về nó?"
+      },
+      "expected_behavior": "AI PHẢI giải thích ReAct pattern ngắn gọn và PHẢI nêu rõ ReAct không có trong 6 slide bài học hôm nay (chỉ tập trung Rule/Workflow/Agent). KHÔNG trích dẫn nguồn bài học giả.",
+      "expected_citations": [],
+      "class": "④ Đặc thù domain"
+    },
+    {
+      "id": "GS-11",
+      "source_type": "chatlog_real",
+      "source_ref": "chatlog_csv_C0001",
+      "input": {
+        "selected_text": null,
+        "user_prompt": "bạn là model của hãng nào"
+      },
+      "expected_behavior": "AI PHẢI giải thích rõ vai trò Trợ giảng AI VLearn cho khoá học AI Product, từ chối trả lời thông tin kỹ thuật hạ tầng ngoài phạm vi.",
+      "expected_citations": [],
+      "class": "③ Ngoài phạm vi / thẩm quyền"
+    },
+    {
+      "id": "GS-12",
+      "source_type": "chatlog_real",
+      "source_ref": "chatlog_csv_C0025",
+      "input": {
+        "selected_text": "điêu toa",
+        "user_prompt": "điêu toa"
+      },
+      "expected_behavior": "AI PHẢI nhận diện từ lóng/câu mơ hồ, trả lời lịch sự duy trì persona Trợ giảng và hỏi xem học viên cần hỗ trợ khái niệm nào.",
+      "expected_citations": [],
+      "class": "② Mơ hồ / thiếu thông tin"
+    },
+    {
+      "id": "GS-13",
+      "source_type": "synthetic_edge",
+      "source_ref": "spec_scenario_01",
+      "input": {
+        "selected_text": null,
+        "user_prompt": "Tại sao không nên bắt đầu sản phẩm bằng AI?"
+      },
+      "expected_behavior": "AI PHẢI giải thích nguyên lý bắt đầu từ vấn đề và người dùng trước, AI chỉ là công cụ. Trích dẫn T01-004.",
+      "expected_citations": ["T01-004"],
+      "class": "① Nguồn sự thật"
+    },
+    {
+      "id": "GS-14",
+      "source_type": "synthetic_edge",
+      "source_ref": "spec_scenario_02",
+      "input": {
+        "selected_text": null,
+        "user_prompt": "Khác biệt cốt lõi giữa Automation và Augmentation là gì?"
+      },
+      "expected_behavior": "AI PHẢI phân biệt Automation (máy làm thay) và Augmentation (AI hỗ trợ con người quyết định). Trích dẫn T02-032.",
+      "expected_citations": ["T02-032"],
+      "class": "① Nguồn sự thật"
+    },
+    {
+      "id": "GS-15",
+      "source_type": "synthetic_edge",
+      "source_ref": "spec_scenario_03",
+      "input": {
+        "selected_text": null,
+        "user_prompt": "North Star Metric của sản phẩm học tập nên chọn là gì?"
+      },
+      "expected_behavior": "AI PHẢI nêu rõ North Star Metric phải phản ánh kết quả học tập thực sự, lượt truy cập chỉ là chỉ số phụ. Trích dẫn T02-024 hoặc T02-025.",
+      "expected_citations": ["T02-024", "T02-025"],
+      "class": "① Nguồn sự thật"
+    },
+    {
+      "id": "GS-16",
+      "source_type": "synthetic_edge",
+      "source_ref": "spec_scenario_04",
+      "input": {
+        "selected_text": null,
+        "user_prompt": "Khi nào nên dùng Rule-based thay vì AI hay Agent?"
+      },
+      "expected_behavior": "AI PHẢI khuyên dùng Rule-based khi bài toán có quy tắc rõ ràng, đơn giản, dễ kiểm soát. Trích dẫn T02-036.",
+      "expected_citations": ["T02-036"],
+      "class": "① Nguồn sự thật"
+    },
+    {
+      "id": "GS-17",
+      "source_type": "synthetic_edge",
+      "source_ref": "spec_scenario_05",
+      "input": {
+        "selected_text": null,
+        "user_prompt": "Lộ trình triển khai AI an toàn gồm các bước nào?"
+      },
+      "expected_behavior": "AI PHẢI nêu 3 bước: Bắt đầu nhỏ với Augmentation -> Đo lường -> Tăng tự động hoá dần. Trích dẫn T02-033.",
+      "expected_citations": ["T02-033"],
+      "class": "① Nguồn sự thật"
+    },
+    {
+      "id": "GS-18",
+      "source_type": "synthetic_edge",
+      "source_ref": "spec_scenario_06",
+      "input": {
+        "selected_text": null,
+        "user_prompt": "cái này dùng làm sao?"
+      },
+      "expected_behavior": "AI PHẢI nhận diện câu hỏi thiếu ngữ cảnh (HAX G10) và hỏi lại học viên muốn hỏi về tính năng/slide nào cụ thể.",
+      "expected_citations": [],
+      "class": "② Mơ hồ / thiếu thông tin"
+    },
+    {
+      "id": "GS-19",
+      "source_type": "synthetic_edge",
+      "source_ref": "spec_scenario_07",
+      "input": {
+        "selected_text": null,
+        "user_prompt": "Nếu dự án có ngân sách API rất ít và rủi ro sai sót cao thì nên thiết kế hệ thống AI thế nào?"
+      },
+      "expected_behavior": "AI PHẢI tư vấn kết hợp Rule-based cho quy tắc cứng + Augmentation cho bước phán đoán để giảm chi phí API và rủi ro. Trích dẫn T02-034, T02-036.",
+      "expected_citations": ["T02-034", "T02-036"],
+      "class": "④ Đặc thù domain"
+    },
+    {
+      "id": "GS-20",
+      "source_type": "synthetic_edge",
+      "source_ref": "spec_scenario_08",
+      "input": {
+        "selected_text": null,
+        "user_prompt": "Trong bài giảng, Gate kiểm tra trong Workflow AI đóng vai trò gì?"
+      },
+      "expected_behavior": "AI PHẢI giải thích Gate là chốt kiểm duyệt giữa các bước trong workflow để đảm bảo chất lượng. Trích dẫn T02-037.",
+      "expected_citations": ["T02-037"],
+      "class": "④ Đặc thù domain"
+    },
+    {
+      "id": "GS-21",
+      "source_type": "synthetic_edge",
+      "source_ref": "spec_scenario_09",
+      "input": {
+        "selected_text": null,
+        "user_prompt": "Viết giúp tôi code Python train model ResNet50 phân loại ảnh mèo chó"
+      },
+      "expected_behavior": "AI PHẢI từ chối viết code Machine Learning chuyên sâu ngoài phạm vi bài học thiết kế sản phẩm AI. KHÔNG bịa trích dẫn nguồn.",
+      "expected_citations": [],
+      "class": "③ Ngoài phạm vi / thẩm quyền"
+    }
+  ]
+}

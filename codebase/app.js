@@ -38,6 +38,26 @@ let quiz={scope:'slide',count:3,items:[],index:0,selected:null,checked:false,sco
 const $=s=>document.querySelector(s);
 const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML};
 
+// --- AI CONFIGURATION STATE ---
+let aiConfig = {
+  provider: localStorage.getItem('VLEARN_AI_PROVIDER') || 'gemini',
+  apiKey: localStorage.getItem('VLEARN_AI_KEY') || '',
+  customEndpoint: localStorage.getItem('VLEARN_AI_ENDPOINT') || ''
+};
+
+function updateAIStatusUI() {
+  const badge = $('#aiStatusBadge');
+  if (badge) {
+    if (aiConfig.apiKey || aiConfig.provider === 'custom') {
+      badge.textContent = `🟢 Real AI Call (${aiConfig.provider.toUpperCase()})`;
+      badge.className = 'status-badge live';
+    } else {
+      badge.textContent = '⚠️ Yêu cầu API Key ⚙️';
+      badge.className = 'status-badge offline';
+    }
+  }
+}
+
 function slideInner(s){
   const heading=esc(s.heading).replace('\n','<br>');
   let extra='';
@@ -62,24 +82,213 @@ function renderSlide(){
   $('#currentSlideScope').textContent=`Slide ${currentSlide+1} · ${s.title}`;
   $('#slideDots').innerHTML=slides.map((_,i)=>`<button class="${i===currentSlide?'active':''}" data-dot="${i}" aria-label="Slide ${i+1}"></button>`).join('');
   document.querySelectorAll('[data-dot]').forEach(b=>b.onclick=()=>goSlide(Number(b.dataset.dot)));
-  renderNav();renderSuggestions();
+  renderNav();renderSuggestions();updateAIStatusUI();
 }
 function goSlide(i){currentSlide=Math.max(0,Math.min(slides.length-1,i));viewed.add(currentSlide);renderSlide();if(innerWidth<=750){$('#slideNav').classList.remove('open');$('#backdrop').classList.remove('open')}}
 function renderSuggestions(){const p=slides[currentSlide].prompts;$('#suggestedQuestions').innerHTML=`<span>Gợi ý theo slide ${currentSlide+1}</span>${p.map(x=>`<button>${x}</button>`).join('')}`;document.querySelectorAll('#suggestedQuestions button').forEach(b=>b.onclick=()=>ask(b.textContent))}
 
-function findAnswer(q){const l=q.toLowerCase();let text,refs;
-  if(l.includes('automation')||l.includes('augmentation')||l.includes('giám sát')){text='<p><strong>Automation</strong> là AI làm thay, còn <strong>Augmentation</strong> là AI hỗ trợ trong khi con người vẫn quyết định.</p><p>Giảng viên khuyến nghị bắt đầu với Augmentation, theo dõi chất lượng rồi mới tăng dần mức tự động hoá—đặc biệt khi hậu quả của lỗi cao.</p>';refs=['T02-032','T02-033'];}
-  else if(l.includes('north star')||l.includes('lượt truy cập')||l.includes('đo lường')){text='<p>North Star Metric là chỉ số phản ánh <strong>giá trị cuối cùng</strong> sản phẩm tạo ra. Với sản phẩm học tập, đó nên là kết quả học tập tốt hơn.</p><p>Lượt truy cập hay thời gian sử dụng chỉ là chỉ số trung gian và chưa tự chứng minh người học tiến bộ.</p>';refs=['T02-024','T02-025'];}
-  else if(l.includes('rule')||l.includes('workflow')||l.includes('agent')){text='<p>Nếu bài toán có quy tắc rõ, hãy ưu tiên <strong>rule-based</strong>. Khi cần nhiều bước có LLM và gate kiểm tra, dùng workflow. Agent chỉ nên đến sau khi cách đơn giản chạm trần.</p>';refs=['T02-036','T02-037'];}
-  else if(l.includes('mơ hồ')||l.includes('bắt đầu')||l.includes('ba câu')||l.includes('ví dụ')){text='<p>Đừng bắt đầu từ câu “dùng AI nào”, mà hãy làm rõ <strong>ai đang gặp vấn đề, họ tắc ở bước nào và hậu quả là gì</strong>.</p><p>Ví dụ: thay vì “làm chatbot AI”, hãy xác định “học viên đang xem lại slide cần tìm nhanh lời giải thích có nguồn để tiếp tục học”.</p>';refs=['T01-001','T01-004','T01-005'];}
-  else {const s=slides[currentSlide];text=`<p>Mình tìm thấy nội dung gần nhất trong transcript của <strong>Slide ${currentSlide+1}</strong>: ${esc(s.desc)}</p><p>Bạn có thể hỏi cụ thể hơn để mình truy xuất đúng đoạn nguồn.</p>`;refs=s.refs;}
-  return{text,refs};
+// --- REAL LLM API CALL ENGINE (NO IF-ELSE FALLBACK) ---
+async function fetchLLMResponse(systemPrompt, userQuery) {
+  const provider = aiConfig.provider;
+  const apiKey = aiConfig.apiKey;
+
+  if (provider === 'gemini') {
+    const candidateModels = [
+      'gemini-3.6-flash',
+      'gemini-3.5-flash',
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash-latest',
+      'gemini-1.5-pro-latest',
+      'gemini-1.5-flash',
+      'gemini-pro'
+    ];
+    
+    let lastErrText = '';
+    for (const modelName of candidateModels) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              { role: 'user', parts: [{ text: `${systemPrompt}\n\nCâu hỏi học viên: ${userQuery}` }] }
+            ]
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        }
+        lastErrText = await res.text();
+      } catch (err) {
+        lastErrText = err.message;
+      }
+    }
+    throw new Error(`Gemini API Error: ${lastErrText}`);
+  }
+
+  if (provider === 'openai' || provider === 'groq' || provider === 'openrouter' || provider === 'custom') {
+    let endpoint = 'https://api.openai.com/v1/chat/completions';
+    let model = 'gpt-4o-mini';
+    if (provider === 'groq') {
+      endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+      model = 'llama-3.3-70b-versatile';
+    } else if (provider === 'openrouter') {
+      endpoint = 'https://openrouter.ai/api/v1/chat/completions';
+      model = 'google/gemini-2.0-flash-001';
+    } else if (provider === 'custom') {
+      endpoint = aiConfig.customEndpoint || 'http://localhost:11434/v1/chat/completions';
+      model = 'llama3';
+    }
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userQuery }
+        ],
+        temperature: 0.3
+      })
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`${provider.toUpperCase()} API Error (${res.status}): ${errText}`);
+    }
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || '';
+  }
+
+  throw new Error('Unrecognized provider');
 }
-function ask(raw){const q=raw.trim();if(!q)return;const suggestions=$('#suggestedQuestions');suggestions.hidden=true;$('#chatMessages').insertAdjacentHTML('beforeend',`<div class="user-message"><div>${esc(q)}</div></div><div class="ai-message" id="typing"><span class="mini-ai">✦</span><div class="typing"><i></i><i></i><i></i></div></div>`);$('#chatInput').value='';$('#sendChat').disabled=true;$('#chatMessages').scrollTop=$('#chatMessages').scrollHeight;setTimeout(()=>{document.querySelector('#typing')?.remove();const a=findAnswer(q);const cites=a.refs.map(r=>`<button data-ref="${r}">${r} ↗</button>`).join('');$('#chatMessages').insertAdjacentHTML('beforeend',`<div class="rag-answer"><div class="answer-label"><i></i>ĐÃ TÌM TRONG TRANSCRIPT</div><div class="ai-message"><span class="mini-ai">✦</span><div class="message-content">${a.text}<div class="citation-row">${cites}</div></div></div><div class="answer-tools"><span>${a.refs.length} đoạn nguồn · vừa xong</span><button aria-label="Hữu ích"><svg viewBox="0 0 24 24"><path d="M7 10v10H3V10h4Zm0 9h10a2 2 0 0 0 2-1.5l1.5-5A2 2 0 0 0 18.6 9H14l.7-3.4A2 2 0 0 0 12.7 3L7 10Z"/></svg></button></div></div>`);bindSources();$('#chatMessages').appendChild(suggestions);suggestions.hidden=false;renderSuggestions();$('#chatMessages').scrollTop=$('#chatMessages').scrollHeight},650)}
+
+async function generateRealAIAnswer(q) {
+  const currentSlideObj = slides[currentSlide];
+
+  // 1. Require API key setup for Real AI Execution (CP3/CP4 Rubric Strict Compliance)
+  if (!aiConfig.apiKey && aiConfig.provider !== 'custom') {
+    return {
+      text: `<p><strong>✦ Chưa cấu hình AI API Key!</strong></p><p>Để gọi AI thật (Gemini / OpenAI / Groq / OpenRouter) sinh câu trả lời tự động mà không dùng bất kỳ câu mẫu if-else nào, bạn hãy nhấp vào biểu tượng <strong>⚙️ Cấu hình</strong> ở góc trên bên phải khung chat để điền API Key nhé.</p><p><button onclick="openSettings()" style="padding:6px 12px;border:0;border-radius:6px;background:var(--purple);color:#fff;font-weight:700;cursor:pointer;">Mở Cấu Hình ⚙️</button></p>`,
+      refs: []
+    };
+  }
+
+  // 2. Prepare Context Prompt for LLM Call
+  const slidesSummary = slides.map((s, i) => `Slide ${i+1}: ${s.title} - ${s.desc} (Nguồn: ${s.refs.join(', ')})`).join('\n');
+  const sourcesSummary = Object.entries(sources).map(([id, s]) => `[${id}] (${s.title}): "${s.text}"`).join('\n');
+  
+  const systemPrompt = `Bạn là Trợ giảng AI VLearn cho khoá học "AI Product".
+Nhiệm vụ của bạn là hỗ trợ học viên giải thích slide và tra cứu transcript bài giảng.
+
+NGUYÊN TẮC QUAN TRỌNG (HAX Guidelines):
+1. Độc lập phân tích và trả lời câu hỏi trực tiếp, đúng trọng tâm.
+2. Trích dẫn mã nguồn [Txx-xxx] (ví dụ: [T01-004], [T02-032]) nếu thông tin nằm trong transcript bên dưới. KHÔNG bịa trích dẫn mã nguồn giả nếu thông tin không xuất hiện trong transcript.
+3. Nếu câu hỏi quá mơ hồ (ví dụ: "heloo", "tóm tắt", "cái này"), hãy hỏi lại học viên một cách lịch sự để thu hẹp phạm vi theo HAX G10.
+4. Nếu câu hỏi ngoài phạm vi bài học (ví dụ: đòi tải file PDF, hỏi thao tác UI, hỏi lịch học/logistics, hỏi cá nhân), hãy từ chối lịch sự và hướng dẫn kênh hỗ trợ phù hợp.
+
+DỮ LIỆU BÀI HỌC VLEARN:
+--- DANH SÁCH SLIDES ---
+${slidesSummary}
+
+--- TRANSCRIPT BÀI GIẢNG ---
+${sourcesSummary}
+
+Đang xem tại: Slide ${currentSlide + 1} (${currentSlideObj.title}).`;
+
+  try {
+    const llmRawResponse = await fetchLLMResponse(systemPrompt, q);
+    
+    // Extract cited refs from real LLM response
+    const refs = [];
+    Object.keys(sources).forEach(refKey => {
+      if (llmRawResponse.includes(refKey)) {
+        refs.push(refKey);
+      }
+    });
+
+    const formattedText = llmRawResponse.split('\n\n').map(p => `<p>${esc(p.trim()).replace(/\n/g, '<br>')}</p>`).join('');
+    return { 
+      text: formattedText, 
+      refs: Array.from(new Set(refs)) 
+    };
+
+  } catch (err) {
+    return {
+      text: `<p><strong>⚠️ Lỗi gọi AI API:</strong> ${esc(err.message)}</p><p>Vui lòng kiểm tra lại API Key hoặc nhà cung cấp LLM trong menu ⚙️ Cấu hình.</p>`,
+      refs: []
+    };
+  }
+}
+
+async function ask(raw){
+  const q = raw.trim();
+  if(!q) return;
+  
+  const suggestions = $('#suggestedQuestions');
+  suggestions.hidden = true;
+  
+  $('#chatMessages').insertAdjacentHTML('beforeend', `<div class="user-message"><div>${esc(q)}</div></div><div class="ai-message" id="typing"><span class="mini-ai">✦</span><div class="typing"><i></i><i></i><i></i></div></div>`);
+  $('#chatInput').value = '';
+  $('#sendChat').disabled = true;
+  $('#chatMessages').scrollTop = $('#chatMessages').scrollHeight;
+  
+  // Real AI API Call
+  const a = await generateRealAIAnswer(q);
+  
+  document.querySelector('#typing')?.remove();
+  
+  const cites = a.refs.map(r => `<button data-ref="${r}">${r} ↗</button>`).join('');
+  const labelText = a.refs.length > 0 ? 'ĐÃ TRÍCH DẪN NGUỒN TRANSCRIPT' : 'PHẢN HỒI TỪ TRỢ GIẢNG AI';
+  
+  $('#chatMessages').insertAdjacentHTML('beforeend', `<div class="rag-answer"><div class="answer-label"><i></i>${labelText}</div><div class="ai-message"><span class="mini-ai">✦</span><div class="message-content">${a.text}<div class="citation-row">${cites}</div></div></div><div class="answer-tools"><span>${a.refs.length} đoạn nguồn · vừa xong</span><button aria-label="Hữu ích"><svg viewBox="0 0 24 24"><path d="M7 10v10H3V10h4Zm0 9h10a2 2 0 0 0 2-1.5l1.5-5A2 2 0 0 0 18.6 9H14l.7-3.4A2 2 0 0 0 12.7 3L7 10Z"/></svg></button></div></div>`);
+  
+  bindSources();
+  $('#chatMessages').appendChild(suggestions);
+  suggestions.hidden = false;
+  renderSuggestions();
+  $('#chatMessages').scrollTop = $('#chatMessages').scrollHeight;
+}
 
 function bindSources(){document.querySelectorAll('[data-ref]').forEach(b=>b.onclick=()=>openSource(b.dataset.ref))}
-function openSource(id){const s=sources[id];$('#sourceTitle').textContent=s.title;$('#sourceId').textContent=id;$('#matchScore').textContent=s.score;$('#sourceText').textContent=s.text;$('#quizModal').classList.remove('open');$('#sourceDrawer').classList.add('open');$('#sourceDrawer').setAttribute('aria-hidden','false');$('#backdrop').classList.add('open')}
-function closeLayers(){['#sourceDrawer','#quizModal','#slideNav'].forEach(x=>$(x).classList.remove('open'));$('#sourceDrawer').setAttribute('aria-hidden','true');$('#quizModal').setAttribute('aria-hidden','true');$('#backdrop').classList.remove('open')}
+function openSource(id){const s=sources[id];if(!s)return;$('#sourceTitle').textContent=s.title;$('#sourceId').textContent=id;$('#matchScore').textContent=s.score;$('#sourceText').textContent=s.text;$('#quizModal').classList.remove('open');$('#sourceDrawer').classList.add('open');$('#sourceDrawer').setAttribute('aria-hidden','false');$('#backdrop').classList.add('open')}
+function closeLayers(){['#sourceDrawer','#quizModal','#slideNav','#settingsModal'].forEach(x=>$(x)?.classList.remove('open'));$('#sourceDrawer')?.setAttribute('aria-hidden','true');$('#quizModal')?.setAttribute('aria-hidden','true');$('#settingsModal')?.setAttribute('aria-hidden','true');$('#backdrop')?.classList.remove('remove');$('#backdrop')?.classList.remove('open')}
+
+// --- SETTINGS MODAL HANDLERS ---
+function openSettings() {
+  closeLayers();
+  $('#aiProvider').value = aiConfig.provider;
+  $('#apiKeyInput').value = aiConfig.apiKey;
+  $('#customEndpointInput').value = aiConfig.customEndpoint;
+  toggleCustomEndpoint();
+  $('#settingsModal').classList.add('open');
+  $('#settingsModal').setAttribute('aria-hidden', 'false');
+  $('#backdrop').classList.add('open');
+}
+
+function toggleCustomEndpoint() {
+  const provider = $('#aiProvider').value;
+  $('#customEndpointGroup').style.display = provider === 'custom' ? 'flex' : 'none';
+}
+
+function saveSettings() {
+  aiConfig.provider = $('#aiProvider').value;
+  aiConfig.apiKey = $('#apiKeyInput').value.trim();
+  aiConfig.customEndpoint = $('#customEndpointInput').value.trim();
+
+  localStorage.setItem('VLEARN_AI_PROVIDER', aiConfig.provider);
+  localStorage.setItem('VLEARN_AI_KEY', aiConfig.apiKey);
+  localStorage.setItem('VLEARN_AI_ENDPOINT', aiConfig.customEndpoint);
+
+  updateAIStatusUI();
+  closeLayers();
+}
 
 function openQuiz(){closeLayers();$('#quizSetup').hidden=false;$('#quizPlay').hidden=true;$('#quizResult').hidden=true;$('#currentSlideScope').textContent=`Slide ${currentSlide+1} · ${slides[currentSlide].title}`;$('#quizModal').classList.add('open');$('#quizModal').setAttribute('aria-hidden','false');$('#backdrop').classList.add('open')}
 function scopedFallbacks(slideIndex){const s=slides[slideIndex],mainRef=s.refs[0];return[
@@ -93,9 +302,19 @@ function renderQuestion(){const item=quiz.items[quiz.index],total=quiz.items.len
 function advanceQuiz(){const item=quiz.items[quiz.index];if(!quiz.checked){quiz.checked=true;const ok=quiz.selected===item.a;if(ok)quiz.score++;$('#quizScore').textContent=`${quiz.score} điểm`;document.querySelectorAll('.quiz-option').forEach(b=>{const i=Number(b.dataset.option);b.classList.add('locked');if(i===item.a)b.classList.add('correct');if(i===quiz.selected&&!ok)b.classList.add('wrong')});$('#quizExplanation').innerHTML=`<strong>${ok?'Chính xác!':'Chưa chính xác.'}</strong> ${item.e} <button data-ref="${item.ref}">Xem nguồn ${item.ref} ↗</button>`;$('#quizExplanation').hidden=false;bindSources();$('#nextQuestion').textContent=quiz.index===quiz.items.length-1?'Xem kết quả':'Câu tiếp theo';return}if(quiz.index<quiz.items.length-1){quiz.index++;quiz.selected=null;quiz.checked=false;renderQuestion()}else showResult()}
 function showResult(){const total=quiz.items.length,pc=Math.round(quiz.score/total*100);$('#quizPlay').hidden=true;$('#quizResult').hidden=false;$('#finalScore').textContent=`${quiz.score}/${total}`;$('#correctAnswers').textContent=quiz.score;$('#accuracy').textContent=`${pc}%`;$('#resultTitle').textContent=pc>=80?'Bạn nắm bài rất tốt!':pc>=50?'Bạn đang tiến bộ!':'Cùng xem lại slide nhé!';$('#resultMessage').textContent=pc>=80?'Bạn đã hiểu chắc các ý chính trong phạm vi vừa chọn.':'Hãy mở lại các trích dẫn để củng cố phần còn nhầm lẫn.'}
 
+// EVENT LISTENERS
 $('#prevSlide').onclick=()=>goSlide(currentSlide-1);$('#nextSlide').onclick=()=>goSlide(currentSlide+1);$('#askSlide').onclick=()=>{if(innerWidth<=1080)$('#chatPanel').classList.add('open');$('#chatInput').focus()};$('#chatFab').onclick=()=>$('#chatPanel').classList.add('open');$('#closeChat').onclick=()=>$('#chatPanel').classList.remove('open');$('#openSlides').onclick=()=>{$('#slideNav').classList.add('open');$('#backdrop').classList.add('open')};$('#closeSlides').onclick=closeLayers;$('#backdrop').onclick=closeLayers;$('#closeSource').onclick=closeLayers;$('#openQuiz').onclick=openQuiz;$('#closeQuiz').onclick=closeLayers;$('#finishQuiz').onclick=closeLayers;$('#retryQuiz').onclick=makeQuiz;$('#generateQuiz').onclick=makeQuiz;$('#nextQuestion').onclick=advanceQuiz;
+
+// Settings modal bindings
+$('#openSettings').onclick=openSettings;
+$('#closeSettings').onclick=closeLayers;
+$('#cancelSettings').onclick=closeLayers;
+$('#saveSettings').onclick=saveSettings;
+$('#aiProvider').onchange=toggleCustomEndpoint;
+
 $('#contextAll').onclick=()=>{chatAll=!chatAll;$('#contextSlide').textContent=chatAll?'Tất cả slides':`Slide ${currentSlide+1}`;$('#contextAll').textContent=chatAll?'Theo slide':'Đổi'};
 document.querySelectorAll('.scope-card').forEach(b=>b.onclick=()=>{document.querySelectorAll('.scope-card').forEach(x=>x.classList.remove('active'));b.classList.add('active');quiz.scope=b.dataset.scope});document.querySelectorAll('.count-picker button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.count-picker button').forEach(x=>x.classList.remove('active'));b.classList.add('active');quiz.count=Number(b.dataset.count)});
+
 $('#chatForm').onsubmit=e=>{e.preventDefault();ask($('#chatInput').value)};$('#chatInput').oninput=e=>{e.target.style.height='auto';e.target.style.height=`${Math.min(e.target.scrollHeight,80)}px`;$('#sendChat').disabled=!e.target.value.trim()};$('#chatInput').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask(e.target.value)}};
 
 function moveSelectionToChat(){

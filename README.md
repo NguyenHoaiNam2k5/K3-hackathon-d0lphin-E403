@@ -1,4 +1,19 @@
-# Mini Hackathon AI — Batch 03
+# Mini Hackathon AI — Batch 03 — Nhóm 03 · Zone 1
+
+**Dự án:** Trợ giảng AI VLearn (Lesson Review & RAG Transcript Assistant)
+
+### Thành viên & Phân công công việc (R7.2)
+- **Quang Anh (HV01)** — Prompt Engineering & Real AI API Integration ([app.js](file:///c:/Users/ngogi/OneDrive/Desktop/FileParse/Batch03-K3-AI-Product-Hackathon/codebase/app.js))
+- **Đức (HV02)** — Golden Set & Run 1 Evaluation ([golden_set.json](file:///c:/Users/ngogi/OneDrive/Desktop/FileParse/Batch03-K3-AI-Product-Hackathon/eval/golden_set.json), [results_run1.md](file:///c:/Users/ngogi/OneDrive/Desktop/FileParse/Batch03-K3-AI-Product-Hackathon/eval/results_run1.md))
+- **Quan (HV03)** — AI Spec & Risk Matrix ([spec.md](file:///c:/Users/ngogi/OneDrive/Desktop/FileParse/Batch03-K3-AI-Product-Hackathon/spec.md))
+- **Bảo (HV04)** — UI Prototype & Source Drawer ([codebase](file:///c:/Users/ngogi/OneDrive/Desktop/FileParse/Batch03-K3-AI-Product-Hackathon/codebase))
+
+### Trạng thái Checkpoint CP3 (AI thật + Đo lượt đầu) — ĐÃ HOÀN THÀNH
+- [x] **AI thật chạy thật**: Đã tích hợp Real AI Call (Gemini 1.5/2.0 Flash, OpenAI, Groq, OpenRouter) & RAG Retrieval Engine trong prototype `codebase/`. Khi Labcoach hay bất kỳ ai gõ một câu lạ tại chỗ, AI sẽ xử lý ứng biến sinh câu trả lời thật kèm trích dẫn nguồn `[Txx-xxx]`.
+- [x] **Bộ Golden Set ≥ 20 câu**: Đã khởi tạo 21 câu thử nghiệm tại [golden_set.json](file:///c:/Users/ngogi/OneDrive/Desktop/FileParse/Batch03-K3-AI-Product-Hackathon/eval/golden_set.json) phủ trọn 4 lớp chỗ khó.
+- [x] **Bảng kết quả đo lượt đầu (Run 1)**: Đã đánh giá đầy đủ 21/21 câu tại [results_run1.md](file:///c:/Users/ngogi/OneDrive/Desktop/FileParse/Batch03-K3-AI-Product-Hackathon/eval/results_run1.md), đạt **81.0% pass rate** (17/21 câu đạt, vượt Quality Bar 75%), ghi nhận trung thực 4 case chưa đạt và phân tích rõ nguyên nhân.
+
+---
 
 **SPEC → Prototype → Demo.** Đây không phải cuộc thi code — đây là cuộc thi **tư duy sản phẩm AI**.
 

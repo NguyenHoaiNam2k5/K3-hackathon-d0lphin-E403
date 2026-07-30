@@ -31,3 +31,24 @@
 @media(max-width:1080px){.chat-panel{height:auto}}
 @media(max-width:1080px){.selection-toast{right:18px;bottom:64px}}
 @media(max-width:750px){.selection-hint{right:12px;top:7px}}
+
+/* AI Settings Modal & Status Badge */
+.status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; }
+.status-badge.live { color: #1e7e56; background: #e6f6ee; }
+.status-badge.offline { color: #8a94a6; background: #f0f2f5; }
+
+.settings-modal { position: fixed; top: 50%; left: 50%; width: min(480px, calc(100vw - 32px)); z-index: 55; visibility: hidden; border-radius: 14px; background: #fff; box-shadow: var(--shadow); opacity: 0; transform: translate(-50%, -47%) scale(.98); transition: .22s; }
+.settings-modal.open { visibility: visible; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.settings-body { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 14px; }
+.settings-field { display: flex; flex-direction: column; gap: 6px; }
+.settings-field label { font-size: 10px; font-weight: 700; color: #47536a; }
+.settings-field input, .settings-field select { padding: 9px 11px; border: 1px solid #dcdfE8; border-radius: 8px; font-size: 11px; outline: none; background: #fff; color: var(--ink); }
+.settings-field input:focus, .settings-field select:focus { border-color: var(--purple); }
+.settings-help { font-size: 8px; color: #8892a4; line-height: 1.4; }
+.settings-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+.settings-actions button { padding: 8px 14px; border-radius: 7px; font-size: 10px; font-weight: 700; border: 0; }
+.btn-secondary { background: #f0f2f6; color: #576378; }
+.btn-secondary:hover { background: #e4e7ee; }
+.btn-primary { background: var(--purple); color: #fff; }
+.btn-primary:hover { background: var(--purple-dark); }
+
