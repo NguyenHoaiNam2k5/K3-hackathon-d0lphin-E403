@@ -20,6 +20,19 @@
   "cases": [
     {
       "id": "MTG-001",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-126", "T06-128", "T06-136"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "standard_grounding",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Hiểu cách LLM hoạt động (Transformer, token, next-token prediction)",
         "student_question": "LLM hoạt động như thế nào?",
@@ -77,6 +90,19 @@
     },
     {
       "id": "MTG-002",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-127", "T06-158"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "standard_grounding",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Transformer xử lý song song khác RNN/LSTM",
         "student_question": "Vì sao Transformer nhanh hơn các kiến trúc cũ?",
@@ -130,6 +156,19 @@
     },
     {
       "id": "MTG-003",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-134"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "standard_grounding",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Token là đơn vị cơ bản của LLM",
         "student_question": "Token có phải lúc nào cũng là một từ không?",
@@ -181,6 +220,19 @@
     },
     {
       "id": "MTG-004",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-135", "T06-136"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "ambiguity_or_context",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "LLM không đọc word by word mà đọc token",
         "student_question": "Mô hình đọc chữ giống con người không?",
@@ -234,6 +286,19 @@
     },
     {
       "id": "MTG-005",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-137"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "standard_grounding",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Next-token prediction và autoregressive",
         "student_question": "Output token có ảnh hưởng lần dự đoán sau không?",
@@ -283,6 +348,19 @@
     },
     {
       "id": "MTG-006",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-136", "T06-140"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "domain_concept",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Temperature điều chỉnh mức độ sáng tạo",
         "student_question": "Khi cần chính xác cao thì nên chỉnh temperature thế nào?",
@@ -332,6 +410,19 @@
     },
     {
       "id": "MTG-007",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-138", "T06-139"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "source_truth",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Hallucination và bias trong LLM",
         "student_question": "Vì sao LLM vẫn có thể trả lời sai?",
@@ -385,6 +476,19 @@
     },
     {
       "id": "MTG-008",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T03-036", "T06-139"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "source_truth",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "RAG giúp giảm hallucination bằng citation",
         "student_question": "Transcript nói RAG giúp gì?",
@@ -438,6 +542,19 @@
     },
     {
       "id": "MTG-009",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-148", "T06-149"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "ambiguity_or_context",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Knowledge cutoff, hallucination, context window",
         "student_question": "Ba bất lợi của LLM trong transcript là gì?",
@@ -493,6 +610,19 @@
     },
     {
       "id": "MTG-010",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-149", "T06-150", "T06-157"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "ambiguity_or_context",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Context window giới hạn lượng thông tin mô hình nhìn thấy",
         "student_question": "Vì sao query dài hoặc video dài có thể làm kết quả không đúng?",
@@ -546,6 +676,19 @@
     },
     {
       "id": "MTG-011",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-154", "T06-155"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "domain_concept",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Token economy và chi phí API",
         "student_question": "Chi phí API được tính theo gì?",
@@ -601,6 +744,19 @@
     },
     {
       "id": "MTG-012",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-156"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "domain_concept",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Chọn mô hình theo mục tiêu: flash nhỏ nhẹ hoặc model lớn",
         "student_question": "Khi nào nên dùng model nhỏ, khi nào nên dùng model lớn?",
@@ -652,6 +808,19 @@
     },
     {
       "id": "MTG-013",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-130", "T06-131", "T06-132"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "domain_concept",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Self-attention với Q, K, V",
         "student_question": "Q, K, V trong ví dụ transcript được giải thích thế nào?",
@@ -707,6 +876,19 @@
     },
     {
       "id": "MTG-014",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-129", "T06-130"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "ambiguity_or_context",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Ví dụ 'nó' trong câu con mèo ngồi trên bàn",
         "student_question": "Self-attention giúp hiểu đại từ như thế nào?",
@@ -760,6 +942,19 @@
     },
     {
       "id": "MTG-015",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-141", "T06-143", "T06-145"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "source_truth",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Pretraining, supervised fine-tuning, alignment/an toàn",
         "student_question": "LLM được tạo ra qua các giai đoạn nào?",
@@ -815,6 +1010,19 @@
     },
     {
       "id": "MTG-016",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-158"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "domain_concept",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "AI hiện đại: machine learning, deep learning, Transformer",
         "student_question": "Transcript tổng kết cấu trúc AI hiện đại thế nào?",
@@ -866,6 +1074,19 @@
     },
     {
       "id": "MTG-017",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-160", "T06-161"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "domain_concept",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Live demo self-attention bằng PhoBERT",
         "student_question": "Bài lab giúp học viên kiểm chứng điều gì?",
@@ -919,6 +1140,19 @@
     },
     {
       "id": "MTG-018",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T03-079"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "standard_grounding",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Kiểm thử sản phẩm AI bằng test case",
         "student_question": "Vì sao cần test cả luồng tool call?",
@@ -970,6 +1204,19 @@
     },
     {
       "id": "MTG-019",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T03-036"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "source_truth",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "RAG cho chatbot nội bộ công ty",
         "student_question": "Tại sao chatbot nội bộ cần retrieval từ tài liệu công ty?",
@@ -1019,6 +1266,19 @@
     },
     {
       "id": "MTG-020",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T03-084", "T03-086"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "source_truth",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Ước tính worst-case API cost",
         "student_question": "Khi làm sản phẩm AI cần tính worst case chi phí như thế nào?",
@@ -1072,6 +1332,19 @@
     },
     {
       "id": "MTG-021",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-154", "T06-155"],
+        "expected_behavior": "out_of_scope_refusal",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "③_out_of_scope",
+        "is_rare": true,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Token economy và chi phí API",
         "student_question": "Đoạn này có nói về học tăng cường là gì không?",
@@ -1128,6 +1401,19 @@
     },
     {
       "id": "MTG-022",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-127", "T06-158"],
+        "expected_behavior": "out_of_scope_refusal",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "③_out_of_scope",
+        "is_rare": true,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Transformer xử lý song song khác RNN/LSTM",
         "student_question": "Lịch học ngày mai và deadline nộp bài là khi nào?",
@@ -1186,6 +1472,19 @@
     },
     {
       "id": "MTG-023",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-149", "T06-150"],
+        "expected_behavior": "out_of_scope_refusal",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "③_out_of_scope",
+        "is_rare": true,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Context window giới hạn lượng thông tin mô hình nhìn thấy",
         "student_question": "GPT-5 hiện có context window chính xác bao nhiêu token?",
@@ -1242,6 +1541,19 @@
     },
     {
       "id": "MTG-024",
+      "metadata": {
+        "origin": "transcript_constructed",
+        "source_conversation_id": null,
+        "slide_scope": "slide",
+        "requested_count": 1,
+        "transcript_segment_ids": ["T06-136", "T06-140"],
+        "expected_behavior": "grounded_answer",
+        "must_cover": ["grounding and citation behavior"],
+        "must_not_claim": ["knowledge not supported by the retrieved transcript"],
+        "risk_class": "domain_concept",
+        "is_rare": false,
+        "grader_notes": "Constructed from transcript segments; not verified as chatlog-derived."
+      },
       "input": {
         "marked_text": "Temperature điều chỉnh mức độ sáng tạo",
         "student_question": "Temperature có phải là nhiệt độ GPU/server không?",
