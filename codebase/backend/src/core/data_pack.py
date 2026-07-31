@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Final
 
 
-REPO_ROOT: Final = Path(__file__).resolve().parents[2]
+REPO_ROOT: Final = Path(__file__).resolve().parents[3]
 DATA_PACK_ROOT: Final = REPO_ROOT.parent / "data" / "vlearn-pack"
 TRANSCRIPT_DIR: Final = DATA_PACK_ROOT / "transcript"
 SLIDES_DIR: Final = DATA_PACK_ROOT / "slides"

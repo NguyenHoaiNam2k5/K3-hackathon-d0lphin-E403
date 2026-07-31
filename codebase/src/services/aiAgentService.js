@@ -11,20 +11,35 @@ export class AgentApiError extends Error {
   }
 }
 
+async function requestJson(request) {
+  try {
+    return await request.json();
+  } catch (error) {
+    const apiMessage = await error.response?.json?.().then(
+      (body) => body.error || body.reason || body.message,
+      () => null
+    );
+    if (apiMessage) {
+      throw new AgentApiError(apiMessage);
+    }
+    throw error;
+  }
+}
+
 export async function sendChatMessage(payload) {
-  return api.post('/api/chat', { json: payload }).json();
+  return requestJson(api.post('/api/chat', { json: payload }));
 }
 
 export async function explainMarkedText(payload) {
-  return api.post('/api/marked-text', { json: payload }).json();
+  return requestJson(api.post('/api/marked-text', { json: payload }));
 }
 
 export async function generateQuiz(payload) {
-  return api.post('/api/quiz', { json: payload }).json();
+  return requestJson(api.post('/api/quiz', { json: payload }));
 }
 
 export async function getAgentVersion() {
-  return api.get('/api/version').json();
+  return requestJson(api.get('/api/version'));
 }
 
 export function slideApiPayload(slide, slideIndex) {

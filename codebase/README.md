@@ -4,7 +4,7 @@ Prototype trang xem lại slide bài giảng, tích hợp chatbot RAG từ trans
 
 ## Chạy demo
 
-Chạy Flask backend trong `../VLearn-Socratic-Tutor` trước:
+Chạy Flask backend trong `codebase/backend` trước:
 
 ```bash
 DAY04_ENV_FILE=.env PYTHONIOENCODING=utf-8 python src/app.py

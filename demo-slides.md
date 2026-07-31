@@ -24,7 +24,7 @@ VLearn Socratic Tutor combines:
 
 ## Slide 4 — Architecture
 
-React/Vite UI (`codebase/`) calls Flask APIs (`VLearn-Socratic-Tutor/`):
+React/Vite UI (`codebase/`) calls Flask APIs (`codebase/backend/`):
 
 - `/api/chat`
 - `/api/marked-text`
