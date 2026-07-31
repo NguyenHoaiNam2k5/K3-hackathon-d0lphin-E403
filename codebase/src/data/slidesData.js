@@ -1,71 +1,60 @@
-export const slides = [
-  {
-    title: 'Từ vấn đề đến sản phẩm AI',
-    short: 'Vấn đề trước, công nghệ sau',
-    time: '03:20',
-    refs: ['T01-001', 'T01-004'],
-    kicker: 'AI PRODUCT · FOUNDATION',
-    heading: 'Đừng bắt đầu bằng AI.\nHãy bắt đầu bằng vấn đề.',
-    desc: 'Công nghệ chỉ tạo ra giá trị khi nó giải quyết một vấn đề cụ thể cho một người dùng cụ thể.',
-    type: 'hero',
-    prompts: ['Tại sao không nên bắt đầu bằng AI?', 'Làm sao biến yêu cầu mơ hồ thành bài toán?']
-  },
-  {
-    title: 'Ba câu hỏi trước khi build',
-    short: 'User · Pain · Impact',
-    time: '04:10',
-    refs: ['T01-004', 'T01-005'],
-    kicker: 'PROBLEM DISCOVERY',
-    heading: 'Ba câu hỏi trước khi chọn giải pháp',
-    desc: 'Một lát cắt tốt cần rõ người dùng, điểm đau và kết quả mong muốn.',
-    type: 'cards',
-    prompts: ['Ba câu hỏi này dùng như thế nào?', 'Cho mình một ví dụ thực tế']
-  },
-  {
-    title: 'Automation & Augmentation',
-    short: 'Chọn mức độ tự động hoá',
-    time: '05:05',
-    refs: ['T02-032', 'T02-033'],
-    kicker: 'AI SOLUTION DESIGN',
-    heading: 'Automation hay Augmentation?',
-    desc: 'Không phải hai thái cực—đây là một phổ về mức độ con người tham gia.',
-    type: 'compare',
-    prompts: ['Automation khác Augmentation thế nào?', 'Khi nào cần con người giám sát?']
-  },
-  {
-    title: 'Lộ trình triển khai an toàn',
-    short: 'Tăng dần mức tự động',
-    time: '03:45',
-    refs: ['T02-033', 'T02-034'],
-    kicker: 'SAFE AI ADOPTION',
-    heading: 'Bắt đầu nhỏ. Đo lường. Tăng dần.',
-    desc: 'Đi từ augmentation đến automation khi dữ liệu cho thấy hệ thống đã đủ tin cậy.',
-    type: 'flow',
-    prompts: ['Vì sao cần bắt đầu với Augmentation?', 'Hậu quả khi AI sai ảnh hưởng ra sao?']
-  },
-  {
-    title: 'Đo lường giá trị học tập',
-    short: 'North Star Metric',
-    time: '04:25',
-    refs: ['T02-024', 'T02-025'],
-    kicker: 'PRODUCT METRICS',
-    heading: 'Đo kết quả, không chỉ đo lượt dùng',
-    desc: 'North Star Metric của sản phẩm học tập phải phản ánh hiệu quả học tập thực sự.',
-    type: 'cards',
-    prompts: ['North Star Metric là gì?', 'Tại sao lượt truy cập chưa đủ?']
-  },
-  {
-    title: 'Từ Rule đến Agent',
-    short: 'Chọn độ phức tạp phù hợp',
-    time: '03:15',
-    refs: ['T02-036', 'T02-037'],
-    kicker: 'TECHNICAL APPROACH',
-    heading: 'Chọn giải pháp đơn giản nhất có thể',
-    desc: 'Rule-based → Workflow → Agent. Chỉ tăng độ phức tạp khi cách đơn giản đã chạm trần.',
-    type: 'flow',
-    prompts: ['Khi nào chỉ cần rule-based?', 'Workflow khác Agent như thế nào?']
-  }
+const slideOutline = [
+  ['Prompt Engineering & Tool Calling', 'Làm sao nói để AI hiểu đúng ý?', 'AICB-P1 · Ngày 4 · Prompt engineering và tool calling.', ['Bài học này tập trung vào những phần nào?', 'Prompt và tool calling liên quan nhau ra sao?']],
+  ['Hãy suy nghĩ', 'Cùng một việc, kết quả khác nhau', 'Hai người hỏi AI cùng một việc nhưng nhận kết quả rất khác nhau.', ['Vì sao cùng một câu hỏi lại ra kết quả khác nhau?', 'Mình nên quan sát gì khi AI trả lời tệ?']],
+  ['Nội dung bài học', '8 phần chính của ngày 4', 'Prompt fundamentals, advanced prompting, system prompt, context engineering, tool calling và lab.', ['Ngày 4 có những phần học nào?', 'Phần nào liên quan trực tiếp tới lab cuối buổi?']],
+  ['Mục Tiêu Ngày 4', 'Role · Task · Context · Format', 'Viết prompt rõ ràng, chọn kỹ thuật prompting đúng lúc, viết system prompt và hiểu vòng lặp tool calling.', ['4 thành phần của prompt tốt là gì?', 'Tool calling là interface giữa model và thế giới ngoài như thế nào?']],
+  ['Deliverable Cuối Ngày', 'Agent script · tools · tests', 'Cần nộp agent chạy được, system prompt, tool schemas, test questions và ghi chú lỗi.', ['Cuối ngày cần nộp những gì?', 'Vì sao phải có test questions cho agent?']],
+  ['Prompt Engineering Fundamentals', 'Prompt tạo hành vi ổn định', 'Prompt tốt không phải prompt hay, mà là prompt tạo ra hành vi mong muốn ổn định.', ['Prompt tốt được đánh giá theo tiêu chí nào?', 'Vì sao “hay” chưa đủ để gọi là prompt tốt?']],
+  ['Prompt = Interface', 'Ý định người dùng và khả năng model', 'Prompt kém mơ hồ; prompt tốt rõ task, context, constraint và format.', ['Specificity beats cleverness nghĩa là gì?', 'Prompt kém thiếu những thông tin nào?']],
+  ['4 Thành Phần Của Prompt Tốt', 'Role · Task · Context · Format', 'Bắt đầu với Task + Format, chỉ thêm Role hoặc Context khi thật sự cải thiện chất lượng.', ['Khi nào cần thêm Role vào prompt?', 'Vì sao nên bắt đầu bằng Task và Format?']],
+  ['Instruction vs Conversation vs System Prompt', 'Chọn loại prompt theo mục đích', 'Instruction cho tác vụ một lượt, conversation giữ ngữ cảnh, system prompt đặt policy và boundary.', ['Instruction prompt khác system prompt thế nào?', 'Khi nào cần conversation prompt?']],
+  ['Token Budget Awareness', 'Prompt dài chưa chắc tốt hơn', 'Token thừa làm tăng chi phí, latency và nhiễu; ưu tiên instruction rõ, example đúng chỗ, output contract rõ.', ['Vì sao prompt dài có thể làm tệ hơn?', 'Nên ưu tiên gì khi tối ưu token budget?']],
+  ['Advanced Prompting Techniques', 'Dùng kỹ thuật khi có ích thật', 'Các kỹ thuật nâng cao chỉ nên dùng khi cải thiện chất lượng thật sự.', ['Khi nào nên dùng kỹ thuật prompting nâng cao?', 'Vì sao không nên dùng như thần chú?']],
+  ['Zero-shot, One-shot, Few-shot, CoT', 'Thử đơn giản trước', 'Thứ tự thực dụng: zero-shot rồi few-shot, decomposition hoặc CoT khi cần reasoning.', ['Zero-shot và few-shot khác nhau thế nào?', 'Khi nào CoT thật sự hữu ích?']],
+  ['Khi Nào Dùng Few-shot?', 'Giữ format và tiêu chuẩn ổn định', 'Few-shot giúp model bám pattern khi format, tone hoặc tiêu chuẩn đánh giá chưa ổn định.', ['Few-shot giải quyết lỗi gì?', 'Ví dụ mẫu nên được chọn như thế nào?']],
+  ['Few-shot Prompting — Python Example', 'Ví dụ phân loại sentiment', 'Dùng vài ví dụ input/output để model giữ đúng nhãn và format mong muốn.', ['Ví dụ few-shot này dạy model điều gì?', 'Nếu thiếu example thì output có thể lệch ra sao?']],
+  ['Chain-of-Thought và Tree-of-Thought', 'Reasoning nhiều bước', 'CoT phù hợp cho bài toán cần suy luận, còn Tree-of-Thought dùng khi cần explore nhiều hướng.', ['Khi nào CoT là overkill?', 'Tree-of-Thought khác CoT ở điểm nào?']],
+  ['System Prompt Engineering', 'Agent nhất quán và dễ test', 'System prompt tốt giúp agent predictable hơn, rõ boundary hơn và dễ kiểm thử hơn.', ['System prompt tốt giúp agent ở điểm nào?', 'Vì sao system prompt cần dễ test?']],
+  ['Anatomy của System Prompt Production-grade', 'Persona · Rules · Capabilities · Constraints · Output', 'System prompt production-grade cần vai trò, rules, capabilities, constraints và output format rõ.', ['System prompt production-grade gồm những phần nào?', 'Constraints khác rules như thế nào?']],
+  ['System Prompt — Python Example', 'Support triage agent', 'Ví dụ system prompt quy định tiếng Việt, độ ngắn gọn, boundary refund và output JSON.', ['Prompt ví dụ này đặt boundary gì?', 'Vì sao output JSON giúp kiểm soát agent?']],
+  ['System Prompt Anti-Patterns', 'Quá dài · mâu thuẫn · mơ hồ', 'Các lỗi phổ biến: prompt quá dài, rule mâu thuẫn, yêu cầu mơ hồ và không test edge cases.', ['Anti-pattern nào dễ làm agent sai nhất?', 'Làm sao phát hiện system prompt mâu thuẫn?']],
+  ['Context Engineering', 'Chọn đúng context cần thiết', 'Quan trọng không phải nhét nhiều context, mà là chọn đúng context cho task.', ['Context engineering khác prompt engineering thế nào?', 'Vì sao không nên dump toàn bộ context?']],
+  ['Context Window Management', 'System · history · input · tools · output', 'Cần phân bổ token chủ động giữa policy, history, current input, tool schemas và output buffer.', ['Context window gồm những rổ nào?', 'Điều gì xảy ra nếu history ăn hết token?']],
+  ['Memory Injection và Context Compression', 'Đưa đúng facts vào task hiện tại', 'Memory chỉ nên đưa facts cần thiết; compression giúp giảm nhiễu và giữ context hữu ích.', ['Memory injection nên chọn thông tin nào?', 'Context compression giúp gì cho tutor nhiều lượt?']],
+  ['Token Budget Allocation', 'Nghĩ theo các rổ token', 'System prompt, history, tool schemas và output buffer đều cạnh tranh token budget.', ['Tool schema dài gây rủi ro gì?', 'Output buffer quá nhỏ sẽ gây lỗi gì?']],
+  ['Tool Calling', 'Từ nói sang tương tác', 'Tool calling giúp agent chuyển từ trả lời văn bản sang tương tác với thế giới thực.', ['Tool calling giải quyết giới hạn nào của LLM?', 'Vì sao model không tự chạy API ngoài?']],
+  ['Tool Calling Flow', 'Model quyết định, app thực thi', 'LLM tạo tool_call JSON; app chạy tool; kết quả quay lại model để trả lời cuối.', ['Vòng lặp tool calling gồm những bước nào?', 'Ứng dụng chịu trách nhiệm gì trong tool calling?']],
+  ['Tool Schema Anatomy', 'Name · Description · Parameters · Required', 'Tool schema cần tên rõ, mô tả đúng lúc dùng, tham số JSON Schema và required fields.', ['Description ảnh hưởng việc chọn tool thế nào?', 'Required fields giúp model ra sao?']],
+  ['Tool Schema — Python Example', 'Weather tool JSON schema', 'Ví dụ khai báo get_weather với name, description và parameters cho city.', ['Schema ví dụ này mô tả input thế nào?', 'Vì sao tên tool nên là động từ rõ nghĩa?']],
+  ['Design Principles Cho Tools', 'Tool là software interface', 'Tool tốt là interface rõ ràng, không phải prompt trang trí.', ['Tool tốt giống software interface ở điểm nào?', 'Vì sao tool không chỉ là phần trang trí prompt?']],
+  ['4 Nguyên Tắc Thiết Kế Tool', 'Single responsibility · idempotency · explicit errors', 'Tool nên làm một việc rõ, có side effect kiểm soát và trả lỗi dễ hiểu.', ['Single responsibility giúp model chọn tool thế nào?', 'Idempotency quan trọng khi retry ra sao?']],
+  ['Tool Granularity', 'Quá nhỏ hay quá to đều có giá', 'Tool quá nhỏ tạo nhiều calls; tool quá to làm boundary mơ hồ.', ['Khi nào tool quá nhỏ gây overhead?', 'Tool quá to làm model nhầm boundary thế nào?']],
+  ['Parallel Tool Calling & Patterns', 'Nhanh hơn cần flow rõ', 'Song song chỉ tốt khi flow control và merge logic rõ ràng.', ['Khi nào parallel tool calls là hợp lý?', 'Vì sao nhanh hơn chưa chắc tốt hơn?']],
+  ['Sequential vs Parallel Tool Calls', 'Phụ thuộc dữ liệu quyết định thứ tự', 'Sequential khi tool B cần output tool A; parallel khi các tool độc lập.', ['Ví dụ nào cần gọi tool tuần tự?', 'Làm sao biết có thể gọi song song?']],
+  ['3 Tool Use Patterns Thường Gặp', 'Conditional · chaining · parallel merge', 'Tool calling là bài toán control flow: khi nào gọi, gọi gì, thứ tự nào và xử lý fail ra sao.', ['Ba pattern tool use thường gặp là gì?', 'Tool fail thì agent cần kiểm soát gì?']],
+  ['Minimal Tool Loop — Python Example', 'Vòng lặp gọi function', 'Ví dụ agent loop nhận function_call, chạy tool, append output rồi gọi model lần nữa.', ['Minimal tool loop xử lý function_call ra sao?', 'Vì sao phải gửi tool result lại cho model?']],
+  ['Thực Hành', 'Lab 4 agent với tools và tests', 'Lab xây agent đầu tiên với system prompt, 2 tools và 5 test cases.', ['Lab 4 cần build những thành phần nào?', 'Test cases kiểm tra hành vi agent ra sao?']],
+  ['Hands-on 4: Cách Chạy Lab', '5 bước thực hành', 'Viết system prompt, tạo custom tools, nối agent loop, chạy test và ghi lỗi.', ['5 bước chạy lab là gì?', 'Lỗi cần ghi lại thuộc những nhóm nào?']],
+  ['Lab Skeleton — Python Example', 'Khung agent loop', 'Skeleton đọc system prompt, nạp tools, nhận user input, gọi model và xử lý tool calls.', ['Skeleton agent loop gồm những biến chính nào?', 'handle_tool_calls có vai trò gì?']],
+  ['Lab #4', 'Build ReAct agent', 'Mục tiêu là build ReAct agent với 2 custom tools, system prompt chuẩn và test end-to-end.', ['ReAct agent trong lab cần chứng minh điều gì?', 'Deliverable của Lab #4 gồm những gì?']],
+  ['Tổng kết — Key Takeaways', 'Prompt · system prompt · tool schema · parallel calls', 'Những ý chính: prompt là interface, system prompt đặt boundary, tool schema quyết định tool use, parallel cần phụ thuộc rõ.', ['4 key takeaways của ngày học là gì?', 'Ý nào quan trọng nhất khi build agent thật?']],
+  ['Tiếp theo & Bài tập', 'Hoàn thiện lab và chuẩn bị ngày sau', 'Hoàn thiện Lab 4 với test pass/fail và chuẩn bị sang AI Product Thinking & Requirements.', ['Bài tập sau buổi học là gì?', 'Ngày tiếp theo sẽ chuyển sang chủ đề nào?']],
+  ['Tài Liệu Tham Khảo', 'Prompting và tool use docs', 'Nguồn tham khảo gồm Anthropic prompting, OpenAI function calling, CoT paper và LangGraph docs.', ['Tài liệu nào nên đọc về function calling?', 'Nguồn nào liên quan đến Chain-of-Thought?']],
+  ['Hỏi & Đáp', 'Prompt hay tool contract?', 'Câu hỏi gợi mở: lỗi đến từ model chưa hiểu ý hay từ tool contract chưa rõ?', ['Làm sao phân biệt lỗi prompt và lỗi tool contract?', 'Khi debug agent nên hỏi câu gì trước?']],
+  ['Cảm ơn', 'Thông tin liên hệ và tài liệu', 'Slide kết thúc với email, GitHub tài liệu và lab template.', ['Link tài liệu và lab template nằm ở đâu?', 'Sau bài này nên ôn lại phần nào?']]
 ];
+
+export const slides = slideOutline.map(([title, short, desc, prompts], index) => ({
+  title,
+  short,
+  time: '01:00',
+  refs: [`T04-${String(index + 1).padStart(3, '0')}`],
+  kicker: 'PROMPT ENGINEERING · TOOL CALLING',
+  heading: title,
+  desc,
+  type: index % 5 === 0 ? 'hero' : index % 3 === 0 ? 'cards' : 'flow',
+  prompts
+}));
 
 export const sources = {
   'T01-001': {

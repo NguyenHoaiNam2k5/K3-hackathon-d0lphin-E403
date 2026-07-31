@@ -1,8 +1,157 @@
-# Day 04 Lab v2 — Research Agent Tool Eval
+# VLearn Socratic Tutor — Flask AI Agent Backend
 
-## Current run surface
+This folder contains the API-only AI agent backend for the VLearn lesson review UI. The React/Vite UI lives in `../codebase` and is the only browser UI surface.
 
-`VLearn-Socratic-Tutor/` is API-only. Run the Flask agent backend on `http://localhost:8501`, then run the React/Vite UI from `../codebase` with npm on `http://localhost:3000`.
+The backend provides transcript-grounded chat, marked-text explanation, data-pack/version status, and quiz generation. It does not render HTML, serve static UI assets, or expose a Flask page at `/`.
+
+## Run Locally
+
+From this folder:
+
+```bash
+python -m venv .venv
+source .venv/Scripts/activate
+pip install -r requirements.txt
+DAY04_ENV_FILE=.env PYTHONIOENCODING=utf-8 python src/app.py
+```
+
+PowerShell activation equivalent:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+The backend listens on `http://localhost:8501`.
+
+Then run the UI from `../codebase`:
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`. Vite proxies `/api/*` to `http://localhost:8501`.
+
+## Environment
+
+Create `.env` in this folder. It is intentionally ignored by git.
+
+Minimum expected provider setup:
+
+```bash
+DAY04_PROVIDER=deepseek
+DEEPSEEK_API_KEY=your_key_here
+```
+
+The provider loader also supports the other SDKs listed in `requirements.txt`, but the current app path defaults to DeepSeek when configured through `.env`.
+
+## API Surface
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/version` | Return artifact version, tool names, prompt text, and data-pack counts. |
+| `GET` | `/api/data-pack` | Return transcript, slide, and chatlog metadata. |
+| `POST` | `/api/chat` | Run transcript-grounded assistant chat for the current slide or marked text. |
+| `POST` | `/api/marked-text` | Retrieve transcript chunks and explain selected slide text. |
+| `POST` | `/api/quiz` | Generate validated multiple-choice quiz items from retrieved transcript chunks. |
+
+There is no `/` UI route. A browser request to `/` should return `404`.
+
+## Request Examples
+
+Chat:
+
+```bash
+curl -s http://localhost:8501/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "4 thành phần của prompt tốt là gì?",
+    "scope": "slide",
+    "slide_id": "slide-04",
+    "slide_title": "Mục Tiêu Ngày 4",
+    "slide_text": "Viết prompt rõ ràng theo Role / Task / Context / Format",
+    "nearby_text": ["Prompt là interface giữa human intent và model behavior"],
+    "history": [],
+    "provider": "deepseek"
+  }'
+```
+
+Marked text:
+
+```bash
+curl -s http://localhost:8501/api/marked-text \
+  -H "Content-Type: application/json" \
+  -d '{
+    "marked_text": "Role / Task / Context / Format",
+    "student_question": "Giải thích phần này dễ hiểu hơn",
+    "slide_id": "slide-04",
+    "slide_title": "Mục Tiêu Ngày 4",
+    "provider": "deepseek"
+  }'
+```
+
+Quiz:
+
+```bash
+curl -s http://localhost:8501/api/quiz \
+  -H "Content-Type: application/json" \
+  -d '{
+    "scope": "slide",
+    "requested_count": 3,
+    "slide_id": "slide-04",
+    "slide_title": "Mục Tiêu Ngày 4",
+    "slide_text": "Role / Task / Context / Format và tool calling",
+    "nearby_text": ["Prompt là interface", "Tool calling là interface với thế giới ngoài"],
+    "provider": "deepseek"
+  }'
+```
+
+Quiz responses can be `QUIZ_READY`, `PARTIAL`, or `INSUFFICIENT_EVIDENCE`. Invalid quiz items are rejected server-side when citations are empty, citations are not in retrieved chunks, option count is not 4, or the answer index is invalid.
+
+## Verification
+
+Backend checks:
+
+```bash
+python -m compileall src tests
+python -m pytest tests/test_quiz_api.py tests/test_transcript_retrieval.py -q
+DAY04_ENV_FILE=.env PYTHONIOENCODING=utf-8 python eval/run_marked_text_eval.py
+```
+
+Frontend build check:
+
+```bash
+cd ../codebase
+npm run build
+```
+
+Known frontend build warnings at the time of this README update: unresolved `images/altText_add.svg` / `images/altText_done.svg`, `pdfjs-dist` eval warning, and a large bundle chunk warning.
+
+## Important Files
+
+| Path | Purpose |
+|---|---|
+| `src/app.py` | Flask API entrypoint on port `8501`. |
+| `src/services/marked_text_service.py` | LLM summary layer for selected text explanations. |
+| `src/services/quiz_service.py` | Transcript-grounded quiz generation and validation. |
+| `src/retrieval/` | Transcript loading, BM25 retrieval, context selection, response shaping. |
+| `src/artifacts/system_prompt.md` | Agent system prompt. |
+| `src/artifacts/tools.yaml` | Tool declarations exposed to the agent loop. |
+| `tests/test_quiz_api.py` | Focused quiz API validation tests. |
+| `tests/test_transcript_retrieval.py` | Transcript retrieval tests. |
+| `../codebase` | React/Vite npm UI. |
+
+## Notes
+
+- Do not commit `.env`, eval run JSONs, validation outputs, `node_modules`, or Vite `dist`.
+- The React app should call only `/api/*`; API keys must stay server-side in this Flask backend.
+- Keep `Pass rate case chatlog` as `N/A` until golden-set cases include `origin = chatlog_mining` metadata.
+
+---
+
+# Original Lab Brief — Day 04 Lab v2
+
+The section below is preserved for rubric/background context. For this project, follow the current run instructions above: Flask is API-only and the browser UI runs from `../codebase` with npm.
 
 ## Brief
 

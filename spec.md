@@ -1,8 +1,7 @@
-# AI SPEC — Tạo câu hỏi ôn tập có căn cứ từ transcript · Nhóm [TODO] · Zone [TODO]
+# AI SPEC — Tạo câu hỏi ôn tập có căn cứ từ transcript · Nhóm D0lphin · Zone 4
 
 **Hướng:** ☒ A — VLearn ☐ B — Trợ lý Học viên ☐ C — Làn mở  
 **Loại:** ☒ Tối ưu tính năng có sẵn ☐ Tính năng mới  
-**Trạng thái tài liệu:** Bản thiết kế trước validation. Các mục cần khảo sát, thử sản phẩm trực tiếp hoặc đo trên prototype được đánh dấu `TODO-THỰC TẾ`; không dùng số liệu giả để thay bằng chứng.
 
 ## Tóm tắt quyết định
 
@@ -100,23 +99,18 @@ Chọn **tạo câu hỏi ôn tập và trả lời câu hỏi có căn cứ t�
 4. Cost-of-error được kiểm soát bằng citation, kiểm tra cấu trúc và bỏ qua đoạn thiếu căn cứ.
 5. Flow có thể demo trong dưới 5 phút: chọn slide → tạo quiz → trả lời → xem giải thích và nguồn.
 
-> Quyết định này dựa trên feasibility và impact ước tính **340 phút pain/tuần**. Trước khi dùng số liệu trên slide demo như bằng chứng, nhóm phải thay hoặc xác nhận chúng bằng khảo sát/mining ở §1.5.
 
 ---
 
 ## §3. Giải pháp tương tự đã nghiên cứu
 
-### 3.1 Desk research
+
 
 | Sản phẩm                                                                           | Flow quan sát từ tài liệu chính thức                                                         | Đáng học                                                                  | Đáng né / giới hạn                                                            | Điểm khác của lát cắt này                                                                   |
 | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | [NotebookLM](https://support.google.com/notebooklm/answer/16179559?hl=en)          | User nạp/chọn nguồn, hỏi hoặc tạo study guide từ nguồn; citation mở được về vị trí liên quan | Grounding và citation giúp kiểm tra nội dung sinh ra                      | User phải tự chuẩn bị/chọn nguồn; không tự gắn với slide đang xem trên VLearn | Transcript đúng buổi đã liên kết sẵn; mỗi câu quiz cite mã đoạn dùng để tạo câu và đáp án   |
 | [ChatGPT Study Mode](https://help.openai.com/en/articles/11780217-study-mode)      | User có thể tải slide/notes, yêu cầu quiz, trả lời và nhận giải thích từng bước              | Kiểm tra hiểu và giải thích sau câu trả lời, không chỉ đưa đáp án         | User vẫn phải nạp/chỉ rõ tài liệu; nội dung có thể sai và cần kiểm tra        | Tạo quiz ngay trong chatbot VLearn từ transcript đã quản lý và giới hạn theo slide/toàn bài |
 | [Khanmigo](https://www.khanacademy.org/college-careers-more/khanmigo-for-students) | AI tutor hỗ trợ học sinh trong hệ sinh thái nội dung và bài tập Khan Academy                 | Hoạt động ôn tập nằm trong trải nghiệm học thay vì tách sang công cụ khác | Phạm vi tutor rộng làm tăng failure mode                                      | Prototype chỉ tạo câu hỏi ôn tập từ lời giảng của khoá, có giải thích và nguồn kiểm chứng   |
-
-### 3.2 Việc còn phải làm trực tiếp
-
-`TODO-THỰC TẾ:` Mỗi thành viên dùng thử ít nhất một sản phẩm và ghi lại màn hình/flow thực tế theo bốn câu: flow, điều đáng học, điều đáng né, điểm khác. Desk research trên chưa thay thế việc dùng thử theo guide.
 
 ---
 

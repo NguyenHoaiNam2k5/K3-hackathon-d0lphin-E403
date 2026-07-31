@@ -71,6 +71,48 @@ def parse_int_field(value: Any, default: int) -> int:
     return default
 
 
+def parse_json_object_text(text: str) -> dict[str, Any] | None:
+    cleaned = text.strip()
+    if cleaned.startswith("```"):
+        cleaned = cleaned.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    try:
+        payload = json.loads(cleaned)
+    except json.JSONDecodeError:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def bracket_citation(value: Any) -> str:
+    citation = str(value or "").strip()
+    if not citation:
+        return ""
+    if citation.startswith("[") and citation.endswith("]"):
+        return citation
+    return f"[{citation}]"
+
+
+def format_chat_assistant_text(raw_text: str) -> str:
+    payload = parse_json_object_text(raw_text)
+    if payload is None:
+        return raw_text
+
+    direct_answer = parse_text_field(payload.get("direct_answer"))
+    socratic_question = parse_text_field(payload.get("socratic_question"))
+    citation = bracket_citation(payload.get("citation"))
+
+    if not direct_answer and not socratic_question:
+        return raw_text
+
+    parts: list[str] = []
+    if direct_answer:
+        parts.append(f"**Giải thích ngắn:**\n{direct_answer}")
+    if socratic_question:
+        parts.append(f"**Câu hỏi gợi mở:**\n{socratic_question}")
+    if citation:
+        parts.append(f"**Nguồn:** {citation}")
+    return "\n\n".join(parts)
+
+
 def parse_quiz_request(data: dict[str, Any]) -> QuizGenerationRequest:
     scope = parse_text_field(data.get('scope'), 'slide')
     requested_count = max(1, min(5, parse_int_field(data.get('requested_count'), 3)))
@@ -180,7 +222,7 @@ def api_chat() -> Any:
             max_tool_rounds=4,
         )
 
-        assistant_text = loop_result.get('assistant_text', '')
+        assistant_text = format_chat_assistant_text(loop_result.get('assistant_text', ''))
 
         return jsonify({
             'status': loop_result.get('status', 'answered'),
