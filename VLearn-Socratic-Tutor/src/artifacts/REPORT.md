@@ -6,9 +6,9 @@ VLearn Socratic Tutor is a transcript-grounded lesson review prototype. The Reac
 
 Current run surface:
 
-- Backend: `DAY04_ENV_FILE=.env PYTHONIOENCODING=utf-8 python src/app.py` on `http://localhost:8501`
-- Frontend: `npm run dev` from `../codebase` on `http://localhost:3000`
-- Vite proxy: `/api/*` -> `http://localhost:8501/api/*`
+- Backend: `DAY04_ENV_FILE=.env PYTHONIOENCODING=utf-8 python src/app.py` on `http://localhost:9002`
+- Frontend: `npm run dev` from `../codebase` on `http://localhost:7001`
+- Vite proxy: `/api/*` -> `http://localhost:9002/api/*`
 
 ## B. AI Decision and Evidence
 
@@ -52,7 +52,7 @@ Notes:
 |---|---|---|---|---|
 | F01 | Trần Anh Văn — 2A202601513 | Code | Flask backend không nên giữ UI cũ khi React/Vite đã là UI chính. | Removed Flask `/` render route, disabled static serving, deleted `src/templates/index.html`. Backend is API-only. |
 | F02 | Lường Duy Thái — 2A202601021 | UI | Chat answer hiển thị Markdown thô như `**...**` và `---`, nhìn khó đọc. | Added `react-markdown` + `remark-gfm`; assistant answers now render bold, lists, rules, and code blocks. |
-| F03 | Nguyễn Hoài Nam — 2A202601399 | Spec/Product | Phần README/run instructions còn lẫn lab cũ và Streamlit, dễ chạy sai surface. | Updated `VLearn-Socratic-Tutor/README.md`: backend `8501`, npm UI `3000`, route table, request examples. |
+| F03 | Nguyễn Hoài Nam — 2A202601399 | Spec/Product | Phần README/run instructions còn lẫn lab cũ và Streamlit, dễ chạy sai surface. | Updated `VLearn-Socratic-Tutor/README.md`: backend `9002`, npm UI `7001`, route table, request examples. |
 | F04 | Ngô Hoàng Gia Bảo — 2A202601375 | Golden set / Eval | Quiz item không được render nếu thiếu citation, citation sai chunk, không đủ 4 lựa chọn, hoặc đáp án invalid. | Added `/api/quiz` validation tests and server-side rejection logic in `quiz_service.py`. |
 | F05 | Nguyễn Hoài Nam — 2A202601399 | Validation/Demo | “Gợi ý theo slide” không đúng nội dung slide đang xem; Slide 4 còn hiện câu hỏi về Augmentation. | Synced `codebase/src/data/slidesData.js` to the real 43-page Day 4 PDF; Slide 4 now suggests prompt/tool-calling questions. |
 | F06 | Trần Anh Văn — 2A202601513 | Code | Eval run JSON and validation output should not clutter git status. | Updated root `.gitignore` and `VLearn-Socratic-Tutor/.gitignore` to ignore `eval/runs/` and `validation/`. |
