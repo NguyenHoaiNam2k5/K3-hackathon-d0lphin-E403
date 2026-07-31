@@ -47,8 +47,10 @@ def test_api_chat_formats_structured_json_for_learners(monkeypatch) -> None:
     body = response.get_json()
     assistant_text = body["assistant_text"]
     assert response.status_code == 200
-    assert "**Giải thích ngắn:**" in assistant_text
-    assert "**Câu hỏi gợi mở:**" in assistant_text
+    assert "**Ý chính:**" in assistant_text
+    assert "**Giải thích:**" in assistant_text
+    assert "**Tự kiểm tra:**" in assistant_text
     assert "**Nguồn:** [T04-089]" in assistant_text
+    assert "boundary" in assistant_text
     assert '"direct_answer"' not in assistant_text
     assert not assistant_text.strip().startswith("{")

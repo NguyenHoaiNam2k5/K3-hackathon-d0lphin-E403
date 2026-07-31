@@ -105,9 +105,15 @@ def format_chat_assistant_text(raw_text: str) -> str:
 
     parts: list[str] = []
     if direct_answer:
-        parts.append(f"**Giải thích ngắn:**\n{direct_answer}")
+        parts.append(f"**Ý chính:**\n{direct_answer}")
+        parts.append(
+            "**Giải thích:**\n"
+            f"{direct_answer} Nói cách khác, đây là phần quy định cách AI phải hành xử trong phạm vi bài học: "
+            "AI nên giữ vai trò gì, tuân thủ boundary nào, và trả lời theo dạng nào. "
+            "Khi đọc câu trả lời, em nên kiểm tra lại ý này với đoạn nguồn bên dưới."
+        )
     if socratic_question:
-        parts.append(f"**Câu hỏi gợi mở:**\n{socratic_question}")
+        parts.append(f"**Tự kiểm tra:**\n{socratic_question}")
     if citation:
         parts.append(f"**Nguồn:** {citation}")
     return "\n\n".join(parts)
