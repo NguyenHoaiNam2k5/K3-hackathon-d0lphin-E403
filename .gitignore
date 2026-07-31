@@ -52,8 +52,10 @@ scratch/
 arxiv_papers/
 INTERNAL-DEMO-SCRIPT.md
 VLearn-Socratic-Tutor/eval/runs/
-VLearn-Socratic-Tutor/validation/
 data/
+!validation/
+!validation/*.log
+
 
 01-de-bai.md
 02-guide.md

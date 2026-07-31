@@ -1,0 +1,78 @@
+[VALIDATION LOG - CP5]
+Project: VLearn Socratic Tutor
+Date: 2026-07-30
+Facilitator: Nguyễn Hoài Nam — 2A202601399
+Task given: Chọn một slide, dùng chatbot để hỏi về nội dung slide, mở citation để kiểm tra nguồn, sau đó thử tạo quiz ôn tập.
+Questions asked after the task:
+1. Điều gì khó hiểu hoặc khó chịu nhất?
+2. Bạn có tin kết quả không? Vì sao?
+3. Bạn có dùng công cụ này khi ôn bài thật không? Vì sao hoặc vì sao chưa?
+
+NOTE: User identifiers are anonymized. The entries below preserve the existing CP5 notes. Do not add invented participants or quotes; complete the TODO records only after observing additional users.
+
+---
+
+[U102]
+Role: Học viên
+Willing user: Chưa xác minh trong note gốc
+Task: Mở Slide 04 và xem gợi ý câu hỏi theo slide.
+Observation: Người thử nhận thấy câu hỏi được đặt ngay trong ngữ cảnh slide đang xem và có thể bắt đầu tương tác mà không cần tự viết prompt.
+Verbatim quote: "Trỏ vào Slide 04 hiện ngay câu hỏi rất trực quan."
+Severity: Low
+Interpretation: Contextual suggestions reduce the effort needed to start the review flow.
+Action: Giữ gợi ý theo slide; tiếp tục kiểm tra câu hỏi có bám đúng nội dung slide hiện tại.
+
+---
+
+[U084]
+Role: Học viên
+Willing user: Chưa xác minh trong note gốc
+Task: Thử flow hỏi đáp và tìm cách yêu cầu giải thích trực tiếp khi đang xem slide.
+Observation: Người thử đánh giá cao cơ chế thoát khỏi flow đang xem để yêu cầu giải thích nhanh.
+Verbatim quote: "Nút Escape Hatch màu vàng giúp giải thích thẳng cực kỳ tiện khi đang vội."
+Severity: Medium
+Scope check: Tên và hành vi "Escape Hatch" chưa được mô tả trong prototype README/API hiện tại; cần xác minh lại màn hình và ghi tên control đúng trước khi dùng làm bằng chứng demo.
+Action: Không dùng feedback này để tuyên bố đã có tính năng mới; kiểm tra lại UI và nếu cần đổi thành feedback về nút chat/giải thích marked-text hiện có.
+
+---
+
+[U155]
+Role: Học viên
+Willing user: Chưa xác minh trong note gốc
+Task: Xem nội dung bài học và thử hiểu mối quan hệ giữa các khái niệm trong slide.
+Observation: Người thử cho biết phần trình bày trực quan giúp họ hiểu quan hệ giữa Vector Search và Reranker.
+Verbatim quote: "Sơ đồ Cây khái niệm nhảy sinh động, giúp hiểu được mối quan hệ giữa Vector Search và Reranker."
+Severity: Medium
+Scope check: "Cây khái niệm" không phải surface được mô tả trong prototype hiện tại; cần xác minh xem đây là feedback của phiên bản UI nào trước khi đưa vào slide/demo.
+Action: Chỉ giữ lại nếu có screenshot hoặc phiên bản UI tương ứng; nếu không, loại khỏi bằng chứng cho VLearn Socratic Tutor hiện tại.
+
+---
+
+[TODO-U004]
+Role: Học viên ngoài nhóm
+Willing user: TODO - xác nhận
+Task: Tạo quiz cho slide hiện tại, trả lời một câu, mở citation trong lời giải.
+Observation: TODO - ghi thao tác thực tế, điểm bị kẹt và thời gian tới câu đầu tiên.
+Verbatim quote: TODO - ghi nguyên văn, không diễn giải.
+Severity: TODO - Low / Medium / High
+Action: TODO - ghi thay đổi sau phiên test.
+
+---
+
+[TODO-U005]
+Role: Học viên ngoài nhóm
+Willing user: TODO - xác nhận
+Task: Yêu cầu tạo nhiều câu hơn khả năng của slide để kiểm tra trạng thái PARTIAL hoặc INSUFFICIENT_EVIDENCE.
+Observation: TODO - người thử có hiểu lý do hệ thống trả ít câu hoặc từ chối hay không.
+Verbatim quote: TODO - ghi nguyên văn, không diễn giải.
+Severity: TODO - Low / Medium / High
+Action: TODO - ghi thay đổi sau phiên test.
+
+---
+
+[SUMMARY]
+Repeated theme: Người dùng cần bắt đầu ôn tập nhanh trong đúng ngữ cảnh slide và có thể kiểm tra nguồn của câu trả lời.
+Most important unresolved risk: Một số ghi chú cũ nhắc tới control/surface chưa có trong prototype hiện tại; cần xác minh trước khi dùng làm bằng chứng.
+Change before demo: Ưu tiên kiểm tra gợi ý theo slide, citation mở được đúng chunk và thông báo rõ khi quiz không đủ căn cứ.
+Keep unchanged: Conditional behavior trả PARTIAL/INSUFFICIENT_EVIDENCE khi transcript không đủ căn cứ, vì đây là guardrail cốt lõi của sản phẩm.
+Backlog: Bổ sung ít nhất 2 phiên test có quan sát và quote nguyên văn; đo thời gian tới câu đầu tiên và mức độ tin tưởng sau khi mở citation.
