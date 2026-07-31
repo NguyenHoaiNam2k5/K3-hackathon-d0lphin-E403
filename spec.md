@@ -150,19 +150,19 @@ Chọn **tạo câu hỏi ôn tập và trả lời câu hỏi có căn cứ t�
 
 ### 4.4 Mức prototype
 
-**Mục tiêu hiện tại:** ☒ Mock ☐ Sketch ☐ Working.
+**Mục tiêu hiện tại:** ☐ Mock ☐ Sketch ☒ Working.
 
 | Thành phần                                    | Thật / mock            | Trạng thái hiện tại                                                  |
 | --------------------------------------------- | ---------------------- | -------------------------------------------------------------------- |
 | Điều hướng bài học, slide, chat, mở citation  | UI thật                | Chạy ở client trong `codebase/`                                      |
 | Dữ liệu slide và một số trích đoạn transcript | Mock có mã nguồn thật  | Hard-code trong `codebase/src/`; các mã đã tồn tại trong data pack |
-| Retrieval/vector database                     | Mock                   | Chưa kết nối; chọn nguồn theo nhánh keyword                          |
+| Retrieval/vector database                     | Working                | BM25 retrieval từ transcript trong `codebase/backend/src/retrieval/` |
 | Sinh câu trả lời hỏi đáp bằng LLM             | Working               | Flask backend trong `codebase/backend/src/` gọi provider cấu hình qua môi trường |
-| Confidence/abstention                         | Chưa build             | Spec hành vi tại §5–§6, cần thể hiện trước demo                      |
-| Tạo và làm quiz                               | UI thật, nội dung mock | Flow chạy được; câu hỏi/đáp án đang hard-code trong `quizBank`       |
+| Confidence/abstention                         | Working                | Backend trả `PARTIAL`/`INSUFFICIENT_EVIDENCE` khi guardrail không đạt |
+| Tạo và làm quiz                               | UI thật, nội dung động | UI gọi `/api/quiz`; câu hỏi do provider sinh và backend validate      |
 | Sinh quiz từ transcript bằng LLM              | Working               | `codebase/backend/src/services/quiz_service.py` tạo và kiểm tra quiz từ context |
 
-> **Gap bắt buộc trước CP3/R5:** thêm ít nhất một lời gọi AI thật ở quyết định trung tâm và giữ log/trace trong repo; prototype hiện tại chưa thoả ràng buộc này.
+> **Giới hạn hiện tại:** slide metadata vẫn có phần static/mock ở frontend; lời gọi AI, retrieval, citation validation và quiz validation chạy thật khi backend được cấu hình provider key.
 
 ### 4.5 Automation
 
@@ -294,12 +294,12 @@ Một case chỉ **pass tổng** khi đạt tất cả điều kiện cứng và
 | Pedagogical value                      | Câu hỏi kiểm tra ý quan trọng; với bộ 5 câu có ≥2 câu hiểu/phân biệt/áp dụng thay vì chỉ nhớ từ     | Hỏi chi tiết vụn, thông tin hành chính hoặc toàn bộ chỉ chép định nghĩa                            |
 | Feedback actionability                 | Sau khi chọn có giải thích vì sao đúng/sai và citation mở được                                      | Chỉ báo “đúng/sai” hoặc user không thể xem nguồn để sửa hiểu nhầm                                  |
 
-**Kiểm tra độ rõ rubric:** `TODO-THỰC TẾ` — hai thành viên chấm độc lập cùng 5 output; nếu bất đồng >1/5 case, sửa định nghĩa trước khi chạy toàn bộ.
+**Kiểm tra độ rõ rubric:** chưa có biên bản chấm độc lập 5 output trong repo; cần hoàn thành trước khi tuyên bố các chiều chất lượng đã có độ đồng thuận.
 
 ### 7.3 Golden set
 
-**File dự kiến:** `eval/golden-set.json` hoặc `eval/golden-set.csv`.  
-**Trạng thái:** `TODO-THỰC TẾ — chưa tạo/chưa chạy; không khai là đã có.`
+**File thực tế:** `eval/golden_set.json`.
+**Trạng thái:** đã có 24 case và các lượt chạy marked-text; bộ hiện tại chưa phải golden set riêng cho quiz và chưa chứng minh được ≥10 case phát triển từ chatlog thật.
 
 Cơ cấu tối thiểu 24 case, bám các metric thực tế ở §1.5/§2 thay vì tự tạo một bộ case chung chung:
 
@@ -323,6 +323,8 @@ Ràng buộc theo nguồn số liệu:
 
 Mỗi record cần có: `case_id`, `origin`, `source_conversation_id` (nếu có), `slide_scope`, `requested_count`, `transcript_segment_ids`, `expected_behavior`, `must_cover`, `must_not_claim`, `risk_class`, `is_rare`, `grader_notes`.
 
+**Đối chiếu hiện trạng:** `eval/golden_set.json` hiện đã có đủ 24 record và đủ các field metadata trên; cả 24 case đang có `origin = transcript_constructed`, vì repo chưa lưu mapping kiểm chứng được từ case tới chatlog. Do đó điều kiện ≥10 case chatlog của rubric **chưa đạt**, không được báo là đã đạt cho tới khi bổ sung source conversation id và bằng chứng đối chiếu.
+
 ### 7.4 Quality bar — chốt trong spec
 
 > **Đạt AI quality khi ≥80% golden set pass tổng, tương đương ít nhất 20/24 case; đồng thời 100% câu được render có đúng một đáp án, đáp án được transcript hỗ trợ và citation tồn tại đúng phạm vi; 100% case thiếu căn cứ/ngoài phạm vi không được cố sinh câu; và không có mã đoạn nguồn bị bịa.**
@@ -343,8 +345,8 @@ Quality bar AI không được hạ sau khi xem kết quả. Nếu không đạt
 
 | Lượt | Thời điểm      | Pass/tổng | Pass rate | Câu render | Citation rỗng/sai | Abstain đúng | Abstain sai | Pass rate case chatlog | So với bar | Failure chính | Artifact        |
 | ---- | -------------- | --------: | --------: | ---------: | ----------------: | -----------: | ----------: | ---------------------: | ---------- | ------------- | --------------- |
-| 01   | 2026-07-30 17:03 ICT |   24 / 24 |    100.0% |         24 |                 0 |            3 |           0 |                   `N/A` | Đạt        | Không có       | `eval/runs/vlearn_marked_text_grounding_v1_2026-07-30T100300Z0000.json` |
-| 02   | 2026-07-30 21:20 ICT |   24 / 24 |    100.0% |         24 |                 0 |            3 |           0 |                   `N/A` | Đạt        | Không có       | `eval/runs/vlearn_marked_text_grounding_v1_2026-07-30T142010Z0000.json` |
+| 01   | 2026-07-30 17:03 ICT |   24 / 24 |    100.0% |         24 |                 0 |            3 |           0 |                   `N/A` | Không kết luận cho quiz | Không có trong marked-text benchmark | `eval/runs/vlearn_marked_text_grounding_v1_2026-07-30T100300Z0000.json` |
+| 02   | 2026-07-30 21:20 ICT |   24 / 24 |    100.0% |         24 |                 0 |            3 |           0 |                   `N/A` | Không kết luận cho quiz | Không có trong marked-text benchmark | `eval/runs/vlearn_marked_text_grounding_v1_2026-07-30T142010Z0000.json` |
 
 Các số trên lấy từ benchmark hiện có `vlearn_marked_text_grounding_v1`, chưa phải benchmark riêng cho quiz generator. Lượt 02 được rerun với provider DeepSeek sau khi nạp `.env` qua `DAY04_ENV_FILE=.env`. `Pass rate case chatlog` để `N/A` vì `eval/golden_set.json` hiện chưa có metadata `origin = chatlog_mining`; cần bổ sung metadata này để đối chiếu trực tiếp với baseline 2.522 dòng chatlog và 46.2% câu trả lời rỗng citation.
 
@@ -359,16 +361,17 @@ Các số trên lấy từ benchmark hiện có `vlearn_marked_text_grounding_v1
 | Spec và quyết định sản phẩm    | Nguyễn Hoài Nam — 2A202601399 | `spec.md`                        |
 | Evidence khảo sát/mining       | Nguyễn Hoài Nam — 2A202601399 | log chuẩn A/B + 5 quote          |
 | Prompt, retrieval và guardrail | Trần Anh Văn — 2A202601513 | prompt/version + trace AI thật   |
-| Golden set và chấm eval        | Ngô Hoàng Gia Bảo — 2A202601375 | `eval/golden-set.*`, các run     |
-| Code prototype                 | Trần Anh Văn — 2A202601513 | logic trong `codebase/`          |
-| UI prototype                   | Lường Duy Thái — 2A202601021 | giao diện trong `codebase/`      |
+| Golden set và chấm eval        | Ngô Hoàng Gia Bảo — 2A202601375 | `eval/golden_set.json`, các run  |
+| React UI và tích hợp frontend-backend | Trần Anh Văn — 2A202601513 | `codebase/src/`, API client và flow UI |
+| UI prototype                   | Lường Duy Thái — 2A202601021 | giao diện và styles trong `codebase/` |
+| Code prototype                 | Trần Anh Văn — 2A202601513 | logic trong `codebase/backend/` |
 | Validation, demo và slide      | Nguyễn Hoài Nam — 2A202601399 | `validation/`, `demo-slides.pdf` |
 
 > Một người có thể giữ nhiều hạng mục, nhưng mọi hạng mục phải có tên và người đó phải giải thích được phần mình làm.
 
 ### 8.2 Willing users và validation CP5
 
-**≥3 willing users:** `TODO-THỰC TẾ — [Tên/vai 1], [Tên/vai 2], [Tên/vai 3]`.  
+**Willing users:** chưa xác minh từ note gốc; `validation/user_feedback.log` hiện có 3 mã người dùng ẩn danh nhưng chưa đủ thông tin để xác nhận willing user.
 **Kế hoạch:** mời ≥5 người ngoài nhóm, trong đó có ≥2 willing users đã khai từ CP1; mỗi người làm một task thật trong 10 phút, người điều phối im lặng quan sát.
 
 Ba câu hỏi cố định sau task:
@@ -378,11 +381,11 @@ Ba câu hỏi cố định sau task:
 3. “Bạn có dùng thật không — vì sao hoặc vì sao chưa?”
 
 **Người ghi log:** Nguyễn Hoài Nam — 2A202601399.  
-**Artifact:** `validation/feedback-log.md`, gồm tên/vai, willing user hay không, task, quan sát, quote nguyên văn, mức nghiêm trọng.
+**Artifact:** `validation/user_feedback.log`, gồm tên/vai, willing user hay không, task, quan sát, quote nguyên văn, mức nghiêm trọng. Trạng thái hiện tại: 3 ghi chú có quote, 2 phiên còn TODO; chưa đạt ngưỡng ≥5 người ngoài nhóm.
 
 ### 8.3 Multi-prototype
 
-`TODO nếu kịp:` thử hai phương án trên đúng một trục **xử lý khi không đủ nội dung tạo số câu đã yêu cầu**:
+**Trạng thái multi-prototype:** chưa thử hai phương án trên đúng một trục **xử lý khi không đủ nội dung tạo số câu đã yêu cầu**:
 
 - **Phương án A:** tự giảm số câu và giải thích lý do.
 - **Phương án B:** hỏi user có muốn mở rộng từ slide hiện tại sang toàn bài trước khi tạo.
@@ -404,7 +407,7 @@ Tiêu chí chọn: tỷ lệ hoàn tất quiz không cần trợ giúp, tỷ l�
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | 2026-07-30     | Tạo spec ban đầu cho lát cắt hỏi đáp transcript theo slide                                                                                               | Theo `02-guide.md`, `03-template-ai-spec.md`, rubric và trạng thái prototype trong `codebase/`       |
 | 2026-07-30     | Chuyển hướng thành tối ưu chatbot có sẵn: dùng transcript để tạo câu hỏi ôn tập có đáp án, giải thích và citation; cập nhật lại automation, risk và eval | Nhóm xác nhận chatbot là tính năng hiện có và cải tiến trung tâm là tạo câu hỏi ôn tập từ transcript |
-| `TODO-THỰC TẾ` | `[Thay đổi sau run/validation]`                                                                                                                          | `[case_id hoặc feedback_id]`                                                                         |
+| 2026-07-31     | Chuẩn hóa validation log, giữ lại quote hiện có và đánh dấu các feedback không khớp surface prototype để xác minh lại | `validation/user_feedback.log`, U102/U084/U155 |
 
 ---
 
@@ -413,9 +416,9 @@ Tiêu chí chọn: tỷ lệ hoàn tất quiz không cần trợ giúp, tỷ l�
 1. **Hướng:** A — tối ưu chatbot có sẵn trên VLearn.
 2. **Job executor:** học viên đang xem lại một slide ở nhà và muốn tự kiểm tra mức độ hiểu.
 3. **Pain:** slide cô đọng, còn việc tự tạo câu hỏi từ cả lời giảng tốn công; học viên dễ tưởng mình hiểu và không biết phần nào cần xem lại.
-4. **Evidence ban đầu:** có 6 transcript sạch, khoảng 700 đoạn làm nguồn; bằng chứng pain khảo sát/mining `TODO-THỰC TẾ`.
+4. **Evidence ban đầu:** có 6 transcript sạch, khoảng 700 đoạn làm nguồn; pain evidence hiện ghi nhận khảo sát `n = 21`, 80% xác nhận gặp khó khăn và mining chatlog 2.522 dòng với 46.2% câu trả lời rỗng citation.
 5. **Lát cắt:** Khi một học viên đang xem lại một slide ở nhà muốn tự kiểm tra mức độ hiểu, chatbot quyết định nội dung nào trong transcript đủ căn cứ để tạo một bộ câu hỏi ôn tập có đáp án, giải thích và trích dẫn, giúp học viên biết phần nào cần xem lại.
-6. **Automation:** conditional vì câu hỏi có đáp án sai/mơ hồ có thể củng cố kiến thức sai; case không chắc phải bị loại; ≥3 willing users `TODO-THỰC TẾ`.
+6. **Automation:** conditional vì câu hỏi có đáp án sai/mơ hồ có thể củng cố kiến thức sai; case không chắc phải bị loại; willing users chưa đủ thông tin xác minh trong validation log.
 7. **Phân công:** đã điền tên và mã số sinh viên theo §8.1.
 
 ## Phụ lục B — Prompt contract cho quyết định AI trung tâm
