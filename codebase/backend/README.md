@@ -1,6 +1,6 @@
 # VLearn Socratic Tutor — Flask AI Agent Backend
 
-This folder contains the API-only AI agent backend for the VLearn lesson review UI. The React/Vite UI lives in `../codebase` and is the only browser UI surface.
+This folder contains the API-only AI agent backend for the VLearn lesson review UI. The React/Vite UI lives in `..` and is the only browser UI surface.
 
 The backend provides transcript-grounded chat, marked-text explanation, data-pack/version status, and quiz generation. It does not render HTML, serve static UI assets, or expose a Flask page at `/`.
 
@@ -23,7 +23,7 @@ PowerShell activation equivalent:
 
 The backend listens on `http://localhost:9002`.
 
-Then run the UI from `../codebase`:
+Then run the UI from `..`:
 
 ```bash
 npm install
@@ -121,7 +121,7 @@ DAY04_ENV_FILE=.env PYTHONIOENCODING=utf-8 python eval/run_marked_text_eval.py
 Frontend build check:
 
 ```bash
-cd ../codebase
+cd ..
 npm run build
 ```
 
@@ -139,7 +139,7 @@ Known frontend build warnings at the time of this README update: unresolved `ima
 | `src/artifacts/tools.yaml` | Tool declarations exposed to the agent loop. |
 | `tests/test_quiz_api.py` | Focused quiz API validation tests. |
 | `tests/test_transcript_retrieval.py` | Transcript retrieval tests. |
-| `../codebase` | React/Vite npm UI. |
+| `..` | React/Vite npm UI. |
 
 ## Notes
 
@@ -151,7 +151,7 @@ Known frontend build warnings at the time of this README update: unresolved `ima
 
 # Original Lab Brief — Day 04 Lab v2
 
-The section below is preserved for rubric/background context. For this project, follow the current run instructions above: Flask is API-only and the browser UI runs from `../codebase` with npm.
+The section below is preserved for rubric/background context. For this project, follow the current run instructions above: Flask is API-only and the browser UI runs from `..` with npm.
 
 ## Brief
 

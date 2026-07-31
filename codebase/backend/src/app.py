@@ -24,7 +24,7 @@ from core.versioning import ArtifactVersion, artifact_version_dict, build_artifa
 ROOT = Path(__file__).parent
 ARTIFACTS_DIR = ROOT / 'artifacts'
 
-load_lab_env(ROOT)
+load_lab_env(ROOT.parent)
 
 app = Flask(__name__, static_folder=None)
 
@@ -97,6 +97,8 @@ def format_chat_assistant_text(raw_text: str) -> str:
         return raw_text
 
     direct_answer = parse_text_field(payload.get("direct_answer"))
+    explanation = parse_text_field(payload.get("explanation"))
+    example = parse_text_field(payload.get("example"))
     socratic_question = parse_text_field(payload.get("socratic_question"))
     citation = bracket_citation(payload.get("citation"))
 
@@ -106,12 +108,10 @@ def format_chat_assistant_text(raw_text: str) -> str:
     parts: list[str] = []
     if direct_answer:
         parts.append(f"**Ý chính:**\n{direct_answer}")
-        parts.append(
-            "**Giải thích:**\n"
-            f"{direct_answer} Nói cách khác, đây là phần quy định cách AI phải hành xử trong phạm vi bài học: "
-            "AI nên giữ vai trò gì, tuân thủ boundary nào, và trả lời theo dạng nào. "
-            "Khi đọc câu trả lời, em nên kiểm tra lại ý này với đoạn nguồn bên dưới."
-        )
+    if explanation:
+        parts.append(f"**Giải thích:**\n{explanation}")
+    if example:
+        parts.append(f"**Ví dụ / cách hiểu:**\n{example}")
     if socratic_question:
         parts.append(f"**Tự kiểm tra:**\n{socratic_question}")
     if citation:

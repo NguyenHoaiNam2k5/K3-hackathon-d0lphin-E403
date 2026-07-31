@@ -18,7 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 EVAL_DIR = Path(__file__).resolve().parent
-SRC_DIR = ROOT / "src"
+SRC_DIR = ROOT / "codebase" / "backend" / "src"
 sys.path.insert(0, str(EVAL_DIR))
 sys.path.insert(0, str(SRC_DIR))
 
@@ -30,7 +30,7 @@ from tools import SlideContext, get_marked_transcript_context  # noqa: E402
 
 DATASET_PATH = ROOT / "eval" / "golden_set.json"
 RUNS_DIR = ROOT / "eval" / "runs"
-load_lab_env(SRC_DIR)
+load_lab_env(SRC_DIR.parent)
 PROVIDER_NAME = configured_provider_name()
 
 

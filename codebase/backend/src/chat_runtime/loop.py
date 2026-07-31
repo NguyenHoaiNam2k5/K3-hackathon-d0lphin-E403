@@ -48,7 +48,10 @@ def tool_results_message(events: list[dict[str, Any]]) -> dict[str, str]:
             "TOOL_RESULTS_JSON:\n"
             f"{json_text(events, max_chars=24000)}\n\n"
             "Use only these tool results. If the user asked for a digest and the items are ready, "
-            "call the formatting tool. Otherwise answer the user directly with cited sources when available."
+            "call the formatting tool. Otherwise answer the user directly with cited sources when available. "
+            "For a learner answer, follow the system prompt's five Markdown sections: Ý chính, Giải thích, "
+            "Ví dụ / cách hiểu, Tự kiểm tra, and Nguồn. The primary example must directly illustrate "
+            "the student's question; move related-but-secondary concepts to Liên hệ thêm. Do not return JSON."
         ),
     }
 

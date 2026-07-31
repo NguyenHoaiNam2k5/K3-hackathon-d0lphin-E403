@@ -155,12 +155,12 @@ Chọn **tạo câu hỏi ôn tập và trả lời câu hỏi có căn cứ t�
 | Thành phần                                    | Thật / mock            | Trạng thái hiện tại                                                  |
 | --------------------------------------------- | ---------------------- | -------------------------------------------------------------------- |
 | Điều hướng bài học, slide, chat, mở citation  | UI thật                | Chạy ở client trong `codebase/`                                      |
-| Dữ liệu slide và một số trích đoạn transcript | Mock có mã nguồn thật  | Hard-code trong `codebase/app.js`; các mã đã tồn tại trong data pack |
+| Dữ liệu slide và một số trích đoạn transcript | Mock có mã nguồn thật  | Hard-code trong `codebase/src/`; các mã đã tồn tại trong data pack |
 | Retrieval/vector database                     | Mock                   | Chưa kết nối; chọn nguồn theo nhánh keyword                          |
-| Sinh câu trả lời hỏi đáp bằng LLM             | Mock                   | Chưa có lời gọi AI thật; response hard-code                          |
+| Sinh câu trả lời hỏi đáp bằng LLM             | Working               | Flask backend trong `codebase/backend/src/` gọi provider cấu hình qua môi trường |
 | Confidence/abstention                         | Chưa build             | Spec hành vi tại §5–§6, cần thể hiện trước demo                      |
 | Tạo và làm quiz                               | UI thật, nội dung mock | Flow chạy được; câu hỏi/đáp án đang hard-code trong `quizBank`       |
-| Sinh quiz từ transcript bằng LLM              | Mock                   | Chưa có AI call; đây là quyết định AI trung tâm cần thay thế         |
+| Sinh quiz từ transcript bằng LLM              | Working               | `codebase/backend/src/services/quiz_service.py` tạo và kiểm tra quiz từ context |
 
 > **Gap bắt buộc trước CP3/R5:** thêm ít nhất một lời gọi AI thật ở quyết định trung tâm và giữ log/trace trong repo; prototype hiện tại chưa thoả ràng buộc này.
 
@@ -343,8 +343,8 @@ Quality bar AI không được hạ sau khi xem kết quả. Nếu không đạt
 
 | Lượt | Thời điểm      | Pass/tổng | Pass rate | Câu render | Citation rỗng/sai | Abstain đúng | Abstain sai | Pass rate case chatlog | So với bar | Failure chính | Artifact        |
 | ---- | -------------- | --------: | --------: | ---------: | ----------------: | -----------: | ----------: | ---------------------: | ---------- | ------------- | --------------- |
-| 01   | 2026-07-30 17:03 ICT |   24 / 24 |    100.0% |         24 |                 0 |            3 |           0 |                   `N/A` | Đạt        | Không có       | `VLearn-Socratic-Tutor/eval/runs/vlearn_marked_text_grounding_v1_2026-07-30T100300Z0000.json` |
-| 02   | 2026-07-30 21:20 ICT |   24 / 24 |    100.0% |         24 |                 0 |            3 |           0 |                   `N/A` | Đạt        | Không có       | `VLearn-Socratic-Tutor/eval/runs/vlearn_marked_text_grounding_v1_2026-07-30T142010Z0000.json` |
+| 01   | 2026-07-30 17:03 ICT |   24 / 24 |    100.0% |         24 |                 0 |            3 |           0 |                   `N/A` | Đạt        | Không có       | `eval/runs/vlearn_marked_text_grounding_v1_2026-07-30T100300Z0000.json` |
+| 02   | 2026-07-30 21:20 ICT |   24 / 24 |    100.0% |         24 |                 0 |            3 |           0 |                   `N/A` | Đạt        | Không có       | `eval/runs/vlearn_marked_text_grounding_v1_2026-07-30T142010Z0000.json` |
 
 Các số trên lấy từ benchmark hiện có `vlearn_marked_text_grounding_v1`, chưa phải benchmark riêng cho quiz generator. Lượt 02 được rerun với provider DeepSeek sau khi nạp `.env` qua `DAY04_ENV_FILE=.env`. `Pass rate case chatlog` để `N/A` vì `eval/golden_set.json` hiện chưa có metadata `origin = chatlog_mining`; cần bổ sung metadata này để đối chiếu trực tiếp với baseline 2.522 dòng chatlog và 46.2% câu trả lời rỗng citation.
 
