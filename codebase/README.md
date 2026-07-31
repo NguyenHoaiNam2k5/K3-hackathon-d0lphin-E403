@@ -17,7 +17,7 @@ npm install
 npm run dev
 ```
 
-Truy cập `http://localhost:3000`. Vite proxy sẽ chuyển `/api/*` sang backend ở `http://localhost:8501`.
+Truy cập `http://localhost:7001`. Vite proxy sẽ chuyển `/api/*` sang backend ở `http://localhost:9002`.
 
 ## Luồng có thể demo
 

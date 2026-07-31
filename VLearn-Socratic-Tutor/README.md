@@ -21,7 +21,7 @@ PowerShell activation equivalent:
 .\.venv\Scripts\Activate.ps1
 ```
 
-The backend listens on `http://localhost:8501`.
+The backend listens on `http://localhost:9002`.
 
 Then run the UI from `../codebase`:
 
@@ -30,7 +30,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. Vite proxies `/api/*` to `http://localhost:8501`.
+Open `http://localhost:7001`. Vite proxies `/api/*` to `http://localhost:9002`.
 
 ## Environment
 
@@ -62,7 +62,7 @@ There is no `/` UI route. A browser request to `/` should return `404`.
 Chat:
 
 ```bash
-curl -s http://localhost:8501/api/chat \
+curl -s http://localhost:9002/api/chat \
   -H "Content-Type: application/json" \
   -d '{
     "message": "4 thành phần của prompt tốt là gì?",
@@ -79,7 +79,7 @@ curl -s http://localhost:8501/api/chat \
 Marked text:
 
 ```bash
-curl -s http://localhost:8501/api/marked-text \
+curl -s http://localhost:9002/api/marked-text \
   -H "Content-Type: application/json" \
   -d '{
     "marked_text": "Role / Task / Context / Format",
@@ -93,7 +93,7 @@ curl -s http://localhost:8501/api/marked-text \
 Quiz:
 
 ```bash
-curl -s http://localhost:8501/api/quiz \
+curl -s http://localhost:9002/api/quiz \
   -H "Content-Type: application/json" \
   -d '{
     "scope": "slide",
@@ -131,7 +131,7 @@ Known frontend build warnings at the time of this README update: unresolved `ima
 
 | Path | Purpose |
 |---|---|
-| `src/app.py` | Flask API entrypoint on port `8501`. |
+| `src/app.py` | Flask API entrypoint on port `9002`. |
 | `src/services/marked_text_service.py` | LLM summary layer for selected text explanations. |
 | `src/services/quiz_service.py` | Transcript-grounded quiz generation and validation. |
 | `src/retrieval/` | Transcript loading, BM25 retrieval, context selection, response shaping. |
@@ -199,7 +199,7 @@ UI tốt không chỉ cần "có chat". Mỗi demo nên nhìn được:
 - transcript/run/artifact_version để biết đang xem version nào;
 - cùng một scenario demo được chạy qua nhiều prompt/tool version để thấy cải thiện rõ ràng.
 
-Nếu chọn Streamlit, cài và ghi `streamlit>=1.30.0` vào `requirements.txt`. Tạo `app.py` tái sử dụng `run_model_tool_loop` trong `chat_runtime/loop.py`, hiển thị `rounds/tool_events`, và lưu transcript thay vì viết một agent loop khác. Chạy `streamlit run app.py`; PASS khi mở được `http://localhost:8501`. Framework khác dùng contract tương đương và entrypoint của nhóm.
+Legacy lab note: nếu chọn Streamlit, cài và ghi `streamlit>=1.30.0` vào `requirements.txt`. Project hiện tại không dùng Streamlit; Flask API chạy ở `http://localhost:9002` và UI npm chạy ở `http://localhost:7001`.
 
 ## Deploy để team khác test
 
@@ -208,7 +208,7 @@ UI chạy local chỉ đủ cho máy của team build; nếu team khác test t�
 Cách nhanh nhất cho link tạm là Cloudflare Tunnel:
 
 ```bash
-cloudflared tunnel --url http://localhost:8501
+cloudflared tunnel --url http://localhost:9002
 ```
 
 Lấy URL `trycloudflare.com` được sinh ra, paste vào `REPORT.md` phần A, rồi test lại bằng browser hoặc device khác trước showdown. Tunnel chỉ là giải pháp tạm thời; đừng để lộ secrets hoặc dữ liệu nhạy cảm trong UI public. Chi tiết cài đặt và lưu ý bảo mật nằm ở `TOOL-SETUP.md`.
